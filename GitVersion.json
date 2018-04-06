@@ -1,0 +1,10 @@
+{
+    "mode": "ContinuousDelivery",
+    "branches": {
+
+    },
+    "ignore": {
+        "sha": [
+        ]
+    }
+}
