@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace Aelfweard.Dns
 {
@@ -21,6 +22,59 @@ namespace Aelfweard.Dns
         public ushort TotalAnswerRecords { get; }
         public ushort TotalAuthorityRecords { get; }
         public ushort TotalAdditionalRecords { get; }
+
+        public static Header ParseFromBytes(byte[] messageBytes, int offset)
+        {
+            var memStream = new MemoryStream(messageBytes);
+            memStream.Position = offset;
+            return ParseFromStream(memStream);
+        }
+
+        public static Header ParseFromStream(Stream messageStream)
+        {
+            var reader = new BinaryReader(messageStream);
+            var needsSwap = BitConverter.IsLittleEndian;
+
+            ushort SwapUInt16(ushort x) =>
+                needsSwap ? (ushort)((ushort)((x & 0xff) << 8) | ((x >> 8) & 0xff)) : x;
+
+            var id = SwapUInt16(reader.ReadUInt16());
+
+            var flags = SwapUInt16(reader.ReadUInt16());
+            var query = (flags & 0b1000_0000_0000_0000) == 0;
+            var opcode = (Opcode)(flags & 0b0111_1000_0000_0000);
+            var authoritative = (flags & 0b0000_0100_0000_0000) != 0;
+            var truncated = (flags & 0b0000_0010_0000_0000) != 0;
+            var recurse = (flags & 0b0000_0001_0000_0000) != 0;
+            var recursionAvailable = (flags & 0b0000_0000_1000_0000) != 0;
+            var z = (flags & 0b0000_0000_0100_0000) != 0;
+            var authenticated = (flags & 0b0000_0000_0010_0000) != 0;
+            var checkingDisabled = (flags & 0b0000_0000_0001_0000) != 0;
+            var returnCode = (ReturnCode)(flags & 0b0000_0000_0000_1111);
+
+            var totalQuestions = SwapUInt16(reader.ReadUInt16());
+            var totalAnswerRecords = SwapUInt16(reader.ReadUInt16());
+            var totalAuthorityRecords = SwapUInt16(reader.ReadUInt16());
+            var totalAdditionalRecords = SwapUInt16(reader.ReadUInt16());
+
+            return new Header(
+                id,
+                query,
+                opcode,
+                authoritative,
+                truncated,
+                recurse,
+                recursionAvailable,
+                z,
+                authenticated,
+                checkingDisabled,
+                returnCode,
+                totalQuestions,
+                totalAnswerRecords,
+                totalAuthorityRecords,
+                totalAdditionalRecords
+            );
+        }
 
         public Header(
             ushort? id,
