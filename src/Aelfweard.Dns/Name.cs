@@ -9,10 +9,10 @@ namespace Aelfweard.Dns
         ushort offsetToName;
         string cachedName;
 
-        public Name(byte[] originalMessage, ushort value)
+        public Name(byte[] originalMessage, ushort offset)
         {
             this.originalMessage = originalMessage;
-            offsetToName = (ushort)(value & 0b0011111111111111);
+            offsetToName = (ushort)(offset & 0b0011111111111111);
         }
 
         public override string ToString()
@@ -20,25 +20,11 @@ namespace Aelfweard.Dns
             if (cachedName != null)
                 return cachedName;
 
-            var nameBuilder = new StringBuilder();
-            var messageStream = new MemoryStream(originalMessage);
-            messageStream.Seek(offsetToName, SeekOrigin.Begin);
-            var reader = new BinaryReader(messageStream);
-
-            while (true) {
-                var nextByte = reader.ReadByte();
-
-                // Null terminator ends the QNAME section.
-                if (nextByte == 0)
-                    break;
-
-                var labelBytes = reader.ReadBytes(nextByte);
-                nameBuilder.Append(Encoding.ASCII.GetString(labelBytes));
-                nameBuilder.Append('.');
+            using (var messageStream = new MemoryStream(originalMessage)) {
+                messageStream.Seek(offsetToName, SeekOrigin.Begin);
+                cachedName = Utils.ParseQName(messageStream);
+                return cachedName;
             }
-
-            cachedName = nameBuilder.Remove(nameBuilder.Length-1, 1).ToString();
-            return cachedName;
         }
     }
 }

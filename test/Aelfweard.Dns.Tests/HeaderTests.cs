@@ -3,6 +3,12 @@ using Xunit;
 
 namespace Aelfweard.Dns.Tests
 {
+    /// <summary>
+    /// Tests DNS wire format header parsing.
+    /// TODO: Come up with some way to run these tests on _many_ inputs
+    /// TODO: and outputs. Need to find some storage format that has the
+    /// TODO: req/resp (base64 or hex) and expected response values. TOML?
+    /// </summary>
     public class HeaderTests
     {
         /// <summary>
