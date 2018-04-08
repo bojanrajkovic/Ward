@@ -29,5 +29,11 @@ namespace Aelfweard.Dns
 
         public static ushort SwapUInt16(ushort x) =>
             BitConverter.IsLittleEndian ? (ushort)((ushort)((x & 0xff) << 8) | ((x >> 8) & 0xff)) : x;
+
+        public static uint SwapUInt32(uint x) =>
+            BitConverter.IsLittleEndian ? ((x & 0x000000ff) << 24) +
+                                          ((x & 0x0000ff00) << 8) +
+                                          ((x & 0x00ff0000) >> 8) +
+                                          ((x & 0xff000000) >> 24) : x;
     }
 }
