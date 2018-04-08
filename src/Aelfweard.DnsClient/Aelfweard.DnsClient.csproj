@@ -7,5 +7,6 @@
 
   <ItemGroup Label="NuGet Packages">
     <ProjectReference Include="..\Aelfweard.Dns\Aelfweard.Dns.csproj" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />
   </ItemGroup>
 </Project>
