@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 using static Aelfweard.Dns.Utils;
 
@@ -8,6 +11,7 @@ namespace Aelfweard.Dns
     public class Record
     {
         public Name Name { get; }
+        public string StringName { get; }
         public Type Type { get; }
         public Class Class { get; }
         public uint TimeToLive { get; }
@@ -28,6 +32,8 @@ namespace Aelfweard.Dns
                     // This record doesn't _have_ a name.
                     name = null;
                 } else {
+                    // Rewind a byte so we can actually read the 2-byte name offset.
+                    stream.Position -= 1;
                     var nameOffset = SwapUInt16(binReader.ReadUInt16());
                     name = new Name(messageBytes, nameOffset);
                 }
@@ -50,6 +56,23 @@ namespace Aelfweard.Dns
         }
 
         public Record(
+            string name,
+            Type type,
+            Class @class,
+            uint timeToLive,
+            ushort length,
+            byte[] data
+        ) {
+            Name = null;
+            StringName = name;
+            Type = type;
+            Class = @class;
+            TimeToLive = timeToLive;
+            Length = length;
+            Data = data;
+        }
+
+        public Record(
             Name name,
             Type type,
             Class @class,
@@ -63,6 +86,23 @@ namespace Aelfweard.Dns
             TimeToLive = timeToLive;
             Length = length;
             Data = data;
+        }
+
+        internal async Task WriteToStreamAsync(Stream s, Dictionary<string, int> offsetMap)
+        {
+            if (string.IsNullOrWhiteSpace(StringName) && Name == null) {
+                s.WriteByte(0);
+            } else {
+                var name = StringName ?? Name.ToString();
+                var nameOffset = (ushort)(0b1100_0000_0000_0000 | offsetMap[name]);
+                await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(nameOffset)), 0, 2);
+            }
+
+            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)Type)), 0, 2);
+            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)Class)), 0, 2);
+            await s.WriteAsync(BitConverter.GetBytes(SwapUInt32(TimeToLive)), 0, 4);
+            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(Length)), 0, 2);
+            await s.WriteAsync(Data, 0, Data.Length);
         }
     }
 }

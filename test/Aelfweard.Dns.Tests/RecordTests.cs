@@ -54,7 +54,7 @@ namespace Aelfweard.Dns.Tests
             // This is the answer RR in the request, and it begins
             // at 28 bytes in, after the 12 byte header and 16 byte question.
             var messageStream = new MemoryStream(message);
-            messageStream.Position = 28;
+            messageStream.Position = 29;
 
             var record = Record.ParseFromStream(message, messageStream);
 

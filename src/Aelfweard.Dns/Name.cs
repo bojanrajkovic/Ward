@@ -12,7 +12,7 @@ namespace Aelfweard.Dns
         public Name(byte[] originalMessage, ushort offset)
         {
             this.originalMessage = originalMessage;
-            offsetToName = (ushort)(offset & 0b0011111111111111);
+            offsetToName = (ushort)(offset & 0b0011_1111_1111_1111);
         }
 
         public override string ToString()

@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Aelfweard.Dns
 {
@@ -57,6 +59,26 @@ namespace Aelfweard.Dns
             Answers = ImmutableList.ToImmutableList(answers);
             Authority = ImmutableList.ToImmutableList(authority);
             Additional = ImmutableList.ToImmutableList(additional);
+        }
+
+        public async Task<byte[]> SerializeAsync()
+        {
+            using (var s = new MemoryStream()) {
+                var offsetMap = new Dictionary<string, int>();
+
+                await Header.WriteToStreamAsync(s);
+
+                foreach (var question in Questions) {
+                    offsetMap.Add(question.Name, (int)s.Position);
+                    await question.WriteToStreamAsync(s);
+                }
+
+                var records = Answers.Concat(Authority).Concat(Additional);
+                foreach (var record in records)
+                    await record.WriteToStreamAsync(s, offsetMap);
+
+                return s.ToArray();
+            }
         }
     }
 }

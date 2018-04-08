@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 using static Aelfweard.Dns.Utils;
 
@@ -30,6 +31,7 @@ namespace Aelfweard.Dns
         {
             using (var reader = new BinaryReader(messageStream, Encoding.ASCII, true)) {
                 var id = SwapUInt16(reader.ReadUInt16());
+
                 var flags = SwapUInt16(reader.ReadUInt16());
                 var query = (flags & 0b1000_0000_0000_0000) == 0;
                 var opcode = (Opcode)(flags & 0b0111_1000_0000_0000);
@@ -41,6 +43,7 @@ namespace Aelfweard.Dns
                 var authenticated = (flags & 0b0000_0000_0010_0000) != 0;
                 var checkingDisabled = (flags & 0b0000_0000_0001_0000) != 0;
                 var returnCode = (ReturnCode)(flags & 0b0000_0000_0000_1111);
+
                 var totalQuestions = SwapUInt16(reader.ReadUInt16());
                 var totalAnswerRecords = SwapUInt16(reader.ReadUInt16());
                 var totalAuthorityRecords = SwapUInt16(reader.ReadUInt16());
@@ -98,6 +101,29 @@ namespace Aelfweard.Dns
             TotalAnswerRecords = totalAnswerRecords;
             TotalAuthorityRecords = totalAuthorityRecords;
             TotalAdditionalRecords = totalAdditionalRecords;
+        }
+
+        internal async Task WriteToStreamAsync(Stream stream)
+        {
+            await stream.WriteAsync(BitConverter.GetBytes(SwapUInt16(Id)), 0, 2);
+
+            ushort flags = 0;
+            flags |= (ushort)((Query ? 0 : 1) << 15);
+            flags |= (ushort)((ushort)Opcode << 14);
+            flags |= (ushort)((Authoritative ? 1 : 0) << 10);
+            flags |= (ushort)((Truncated ? 1 : 0) << 9);
+            flags |= (ushort)((Recurse ? 1 : 0) << 8);
+            flags |= (ushort)((RecursionAvailable ? 1 : 0) << 7);
+            flags |= (ushort)((Z ? 1 : 0) << 6);
+            flags |= (ushort)((Authenticated ? 1 : 0) << 5);
+            flags |= (ushort)((CheckingDisabled ? 1 : 0) << 4);
+            flags |= (ushort)ReturnCode;
+            await stream.WriteAsync(BitConverter.GetBytes(SwapUInt16(flags)), 0, 2);
+
+            await stream.WriteAsync(BitConverter.GetBytes(SwapUInt16(TotalQuestions)), 0, 2);
+            await stream.WriteAsync(BitConverter.GetBytes(SwapUInt16(TotalAnswerRecords)), 0, 2);
+            await stream.WriteAsync(BitConverter.GetBytes(SwapUInt16(TotalAuthorityRecords)), 0, 2);
+            await stream.WriteAsync(BitConverter.GetBytes(SwapUInt16(TotalAdditionalRecords)), 0, 2);
         }
     }
 }

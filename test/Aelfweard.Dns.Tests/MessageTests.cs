@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+
 using Xunit;
 
 namespace Aelfweard.Dns.Tests
@@ -8,6 +10,37 @@ namespace Aelfweard.Dns.Tests
     public class MessageTests
     {
         const string requestMessage = "HfoBIAABAAAAAAABBmdvb2dsZQNjb20AAAEAAQAAKRAAAAAAAAAMAAoACJOxHvPq368a";
+        const string responseMessage = "qqqBgAABAAEAAAAAB2V4YW1wbGUDY29tAAABAAHADAABAAEAADu8AARduNgi";
+
+        [Fact]
+        public async Task Can_serialize_message_correctly()
+        {
+            var header = new Header(
+                0xaaaa,
+                false,
+                Opcode.Query,
+                false,
+                false,
+                true,
+                true,
+                false,
+                false,
+                false,
+                ReturnCode.NoError,
+                1,
+                1,
+                0,
+                0
+            );
+            var question = new Question("example.com", Type.A, Class.Internet);
+            var answer = new Record("example.com", Type.A, Class.Internet, 15292, 4, new byte[] { 93, 184, 216, 34 });
+            var message = new Message(header, new [] { question }, new [] { answer }, Array.Empty<Record>(), Array.Empty<Record>());
+
+            var messageBody = Convert.FromBase64String(responseMessage);
+            var serialized = await message.SerializeAsync();
+
+            Assert.Equal(messageBody, serialized);
+        }
 
         [Fact]
         public void Can_parse_whole_message()
