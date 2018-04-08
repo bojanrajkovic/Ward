@@ -39,7 +39,7 @@ namespace Aelfweard.Dns
                 authorities[i] = Record.ParseFromStream(originalMessage, stream);
 
             var additional = new Record[header.TotalAdditionalRecords];
-            for (var i = 0; i < header.TotalAnswerRecords; i++)
+            for (var i = 0; i < header.TotalAdditionalRecords; i++)
                 additional[i] = Record.ParseFromStream(originalMessage, stream);
 
             return new Message(header, questions, answers, authorities, additional);
