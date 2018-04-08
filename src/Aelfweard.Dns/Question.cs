@@ -14,7 +14,7 @@ namespace Aelfweard.Dns
         internal static Question ParseFromStream(Stream stream)
         {
             using (var binReader = new BinaryReader(stream, Encoding.ASCII, true)) {
-                var name = Utils.ParseQName(stream);
+                var name = Utils.ParseComplexName(null, stream);
                 var type = (Type)(Utils.SwapUInt16(binReader.ReadUInt16()));
                 var @class = (Class)(Utils.SwapUInt16(binReader.ReadUInt16()));
 

@@ -8,25 +8,45 @@ namespace Aelfweard.Dns
 {
     static class Utils
     {
-        public static string ParseQName(Stream stream)
+        public static string ParseComplexName(byte[] message, byte[] name, int offset)
         {
-            using (var reader = new BinaryReader(stream, Encoding.ASCII, true)) {
-                var nameBuilder = new StringBuilder();
-
-                while (true) {
-                    var nextByte = reader.ReadByte();
-
-                    // Null terminator ends the QNAME section.
-                    if (nextByte == 0)
-                        break;
-
-                    var labelBytes = reader.ReadBytes(nextByte);
-                    nameBuilder.Append(Encoding.ASCII.GetString(labelBytes));
-                    nameBuilder.Append('.');
-                }
-
-                return nameBuilder.Remove(nameBuilder.Length-1, 1).ToString();
+            var pos = offset;
+            using (var memoryStream = new MemoryStream(name)) {
+                memoryStream.Position = offset;
+                return ParseComplexName(message, memoryStream);
             }
+        }
+
+        public static string ParseComplexName(byte[] message, Stream stream)
+        {
+            var nameBuilder = new StringBuilder();
+            using (var binaryReader = new BinaryReader(stream, Encoding.ASCII, true)) {
+                while (true) {
+                    // Read the current byte.
+                    var nextByte = binaryReader.ReadByte();
+
+                    // Are the top two bits set? If so, this is a pointer somewhere
+                    // else in the message, and is the end of this complex name. Rewind
+                    // one position so we can read the 2 byte pointer.
+                    if ((nextByte & 0b1100_0000) == 0b1100_0000) {
+                        stream.Position--;
+                        var ptrOffset = SwapUInt16(binaryReader.ReadUInt16());
+                        var offsetToName = (ushort)(ptrOffset & 0b0011_1111_1111_1111);
+                        nameBuilder.Append(Utils.ParseComplexName(message, message, offsetToName));
+                        break;
+                    } if (nextByte == 0) {
+                        // EOF
+                        break;
+                    } else {
+                        // Otherwise, this is a number of bytes to read, so read it
+                        // and append the ASCII string to the builder.
+                        nameBuilder.Append(Encoding.ASCII.GetString(binaryReader.ReadBytes(nextByte)));
+                        nameBuilder.Append('.');
+                    }
+                }
+            }
+
+            return nameBuilder.ToString();
         }
 
         public static byte[] WriteQName(string name)
