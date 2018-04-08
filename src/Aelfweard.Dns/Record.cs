@@ -17,7 +17,7 @@ namespace Aelfweard.Dns
         // Record is special, because the `Name` is actually a pointer to somewhere
         // else in the message. Thus, Record needs the entire message, even when
         // stream parsing.
-        public static Record ParseFromStream(byte[] messageBytes, Stream stream)
+        internal static Record ParseFromStream(byte[] messageBytes, Stream stream)
         {
             using (var binReader = new BinaryReader(stream, Encoding.ASCII, true)) {
                 // Records may not have names, if they don't, there'll be a single

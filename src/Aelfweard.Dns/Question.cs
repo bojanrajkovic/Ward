@@ -15,7 +15,7 @@ namespace Aelfweard.Dns
             Class = @class;
         }
 
-        public static Question ParseFromStream(Stream stream)
+        internal static Question ParseFromStream(Stream stream)
         {
             using (var binReader = new BinaryReader(stream, Encoding.ASCII, true)) {
                 var name = Utils.ParseQName(stream);

@@ -26,7 +26,7 @@ namespace Aelfweard.Dns
         public ushort TotalAuthorityRecords { get; }
         public ushort TotalAdditionalRecords { get; }
 
-        public static Header ParseFromStream(Stream messageStream)
+        internal static Header ParseFromStream(Stream messageStream)
         {
             using (var reader = new BinaryReader(messageStream, Encoding.ASCII, true)) {
                 var id = SwapUInt16(reader.ReadUInt16());
