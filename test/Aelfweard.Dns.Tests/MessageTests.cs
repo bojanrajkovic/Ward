@@ -55,7 +55,7 @@ namespace Aelfweard.Dns.Tests
             Assert.Single(message.Additional);
 
             var question = message.Questions[0];
-            Assert.Equal("google.com", question.Name);
+            Assert.Equal("google.com.", question.Name);
             Assert.Equal(Class.Internet, question.Class);
             Assert.Equal(Type.A, question.Type);
 

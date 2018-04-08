@@ -20,7 +20,7 @@ namespace Aelfweard.Dns.Tests
 
             var question = Question.ParseFromStream(messageStream);
 
-            Assert.Equal("google.com", question.Name);
+            Assert.Equal("google.com.", question.Name);
             Assert.Equal(Class.Internet, question.Class);
             Assert.Equal(Type.A, question.Type);
         }

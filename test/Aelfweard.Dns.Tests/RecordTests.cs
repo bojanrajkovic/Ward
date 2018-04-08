@@ -58,7 +58,7 @@ namespace Aelfweard.Dns.Tests
 
             var record = Record.ParseFromStream(message, messageStream);
 
-            Assert.Equal("example.com", record.Name.ToString());
+            Assert.Equal("example.com.", record.Name.ToString());
             Assert.Equal(Type.A, record.Type);
             Assert.Equal(Class.Internet, record.Class);
             Assert.Equal(15292u, record.TimeToLive);
