@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Xunit;
 
 namespace Aelfweard.Dns.Tests
@@ -26,7 +27,8 @@ namespace Aelfweard.Dns.Tests
         public void Can_parse_header_from_request()
         {
             var message = Convert.FromBase64String(requestMessage);
-            var header = Header.ParseFromBytes(message, 0);
+            var messageStream = new MemoryStream(message);
+            var header = Header.ParseFromStream(messageStream);
 
             Assert.Equal(0x1dfa, header.Id);
             Assert.True(header.Query);
@@ -49,7 +51,8 @@ namespace Aelfweard.Dns.Tests
         public void Can_parse_header_from_response()
         {
             var message = Convert.FromBase64String(responseMessage);
-            var header = Header.ParseFromBytes(message, 0);
+            var messageStream = new MemoryStream(message);
+            var header = Header.ParseFromStream(messageStream);
 
             Assert.Equal(0xAAAA, header.Id);
             Assert.False(header.Query);

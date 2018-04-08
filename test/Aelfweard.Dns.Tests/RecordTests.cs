@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Linq;
+
 using Xunit;
 
 namespace Aelfweard.Dns.Tests
@@ -21,7 +23,13 @@ namespace Aelfweard.Dns.Tests
         public void Can_parse_record_from_request()
         {
             var message = Convert.FromBase64String(requestMessage);
-            var record = Record.ParseFromBytes(message, 28);
+
+            // This is the additional record in the request, and it begins
+            // at 28 bytes in, after the 12 byte header and 16 byte question.
+            var messageStream = new MemoryStream(message);
+            messageStream.Position = 28;
+
+            var record = Record.ParseFromStream(message, messageStream);
 
             Assert.Null(record.Name);
             Assert.Equal(Type.OPT, record.Type);
@@ -42,7 +50,13 @@ namespace Aelfweard.Dns.Tests
         public void Can_parse_record_from_response()
         {
             var message = Convert.FromBase64String(responseMessage);
-            var record = Record.ParseFromBytes(message, 28);
+
+            // This is the answer RR in the request, and it begins
+            // at 28 bytes in, after the 12 byte header and 16 byte question.
+            var messageStream = new MemoryStream(message);
+            messageStream.Position = 28;
+
+            var record = Record.ParseFromStream(message, messageStream);
 
             Assert.Equal("example.com", record.Name.ToString());
             Assert.Equal(Type.A, record.Type);

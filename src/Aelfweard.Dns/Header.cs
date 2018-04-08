@@ -26,13 +26,6 @@ namespace Aelfweard.Dns
         public ushort TotalAuthorityRecords { get; }
         public ushort TotalAdditionalRecords { get; }
 
-        public static Header ParseFromBytes(byte[] messageBytes, int offset)
-        {
-            var memStream = new MemoryStream(messageBytes);
-            memStream.Position = offset;
-            return ParseFromStream(memStream);
-        }
-
         public static Header ParseFromStream(Stream messageStream)
         {
             using (var reader = new BinaryReader(messageStream, Encoding.ASCII, true)) {

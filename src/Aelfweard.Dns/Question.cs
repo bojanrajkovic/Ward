@@ -15,13 +15,6 @@ namespace Aelfweard.Dns
             Class = @class;
         }
 
-        public static Question ParseFromBytes(byte[] messageBytes, int offset)
-        {
-            var stream = new MemoryStream(messageBytes);
-            stream.Position = offset;
-            return ParseFromStream(stream);
-        }
-
         public static Question ParseFromStream(Stream stream)
         {
             using (var binReader = new BinaryReader(stream, Encoding.ASCII, true)) {

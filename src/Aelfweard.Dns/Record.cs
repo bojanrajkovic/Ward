@@ -14,14 +14,6 @@ namespace Aelfweard.Dns
         public ushort Length { get; }
         public byte[] Data { get; }
 
-        public static Record ParseFromBytes(byte[] messageBytes, int offset)
-        {
-            using (var stream = new MemoryStream(messageBytes)) {
-                stream.Position = offset;
-                return ParseFromStream(messageBytes, stream);
-            }
-        }
-
         // Record is special, because the `Name` is actually a pointer to somewhere
         // else in the message. Thus, Record needs the entire message, even when
         // stream parsing.
