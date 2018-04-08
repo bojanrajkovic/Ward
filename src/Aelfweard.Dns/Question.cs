@@ -22,7 +22,7 @@ namespace Aelfweard.Dns
             return ParseFromStream(stream);
         }
 
-        public static Question ParseFromStream(MemoryStream stream)
+        public static Question ParseFromStream(Stream stream)
         {
             using (var binReader = new BinaryReader(stream, Encoding.ASCII, true)) {
                 var name = Utils.ParseQName(stream);
