@@ -1,5 +1,7 @@
 using System;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Aelfweard.Dns
@@ -25,6 +27,28 @@ namespace Aelfweard.Dns
 
                 return nameBuilder.Remove(nameBuilder.Length-1, 1).ToString();
             }
+        }
+
+        public static byte[] WriteQName(string name)
+        {
+            var punycode = new IdnMapping().GetAscii(name);
+            var labels = punycode.Split('.');
+            var qname = new byte[labels.Sum(l => 1+l.Length) + 1];
+
+            var pos = 0;
+            foreach (var label in labels) {
+                qname[pos++] = (byte)label.Length;
+                Buffer.BlockCopy(
+                    Encoding.ASCII.GetBytes(label),
+                    0,
+                    qname,
+                    pos,
+                    label.Length
+                );
+                pos += label.Length;
+            }
+
+            return qname;
         }
 
         public static ushort SwapUInt16(ushort x) =>
