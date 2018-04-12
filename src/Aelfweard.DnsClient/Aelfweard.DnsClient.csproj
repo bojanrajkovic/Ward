@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup Label="NuGet Packages">
+    <PackageReference Include="System.Net.Http.WinHttpHandler" Version="4.4.0" />
     <ProjectReference Include="..\Aelfweard.Dns\Aelfweard.Dns.csproj" />
     <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />
   </ItemGroup>
