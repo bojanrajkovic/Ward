@@ -11,6 +11,8 @@ install:
 before_build:
   - dotnet restore
   - ps: gitversion /output buildserver /updateAssemblyInfo
+build:
+    verbosity: minimal
 before_test:
   - ps: |
       # Install OpenCover and ReportGenerator for coverage
@@ -34,7 +36,7 @@ after_test:
       echo "Author: $env:APPVEYOR_REPO_COMMIT_AUTHOR - Email: $env:APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL"
       echo "Job ID: $env:APPVEYOR_JOB_ID"
       echo "Message: $env:APPVEYOR_REPO_COMMIT_MESSAGE"
-      $coveralls = (Resolve-Path "src/packages/coveralls.net.*/tools/csmacnz.coveralls.exe").ToString()
+      $coveralls = (Resolve-Path "packages\\coveralls.net.*\\tools\\csmacnz.coveralls.exe").ToString()
       & $coveralls --opencover -i coverage.xml --repoToken $env:COVERALLS_REPO_TOKEN `
         --commitId $env:APPVEYOR_REPO_COMMIT --commitBranch $env:APPVEYOR_REPO_BRANCH `
         --commitAuthor $env:APPVEYOR_REPO_COMMIT_AUTHOR `
