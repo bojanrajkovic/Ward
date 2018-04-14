@@ -12,7 +12,7 @@ namespace Aelfweard.DnsClient.Tests
         public async Task Can_resolve_A_record()
         {
             var client = new UdpDnsClient("1.1.1.1", 53);
-            var resolve = await client.ResolveAsync("example.com", Dns.Type.A, Class.Internet);
+            var resolve = await client.ResolveAsync("example.com", Type.A, Class.Internet);
 
             Assert.NotNull(resolve);
             Assert.Single(resolve.Results);
@@ -26,7 +26,7 @@ namespace Aelfweard.DnsClient.Tests
         public async Task Can_resolve_MX_record()
         {
             var client = new UdpDnsClient("1.1.1.1", 53);
-            var resolve = await client.ResolveAsync("google.com", Dns.Type.MX, Class.Internet);
+            var resolve = await client.ResolveAsync("google.com", Type.MX, Class.Internet);
 
             Assert.NotNull(resolve);
             Assert.NotEmpty(resolve.Results);
