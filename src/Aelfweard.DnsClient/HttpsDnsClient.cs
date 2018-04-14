@@ -2,10 +2,14 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Security;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 using Aelfweard.Dns;
+using Asn1;
 using Type = Aelfweard.Dns.Type;
 
 namespace Aelfweard.DnsClient
@@ -17,20 +21,41 @@ namespace Aelfweard.DnsClient
         readonly IPAddress address;
         readonly ushort port;
         readonly string tlsHost;
-        readonly string expectedCertificateHash;
+        readonly string expectedSpkiPin;
         readonly HttpClient httpClient;
 
-        public HttpsDnsClient(IPAddress address, ushort port, string tlsHost, string expectedCertificateHash = null)
+        public HttpsDnsClient(IPAddress address, ushort port, string tlsHost, string expectedSpkiPin = null)
         {
             this.address = address;
             this.port = port;
             this.tlsHost = tlsHost;
-            this.expectedCertificateHash = expectedCertificateHash;
+            this.expectedSpkiPin = expectedSpkiPin;
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                httpClient = new HttpClient(new WinHttpHandler());
-            else
-                httpClient = new HttpClient();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                var handler = new WinHttpHandler();
+                handler.ServerCertificateValidationCallback = CheckServerCertificateMatchesExpectedHash;
+                httpClient = new HttpClient(handler);
+            } else {
+                var handler = new HttpClientHandler();
+                handler.ServerCertificateCustomValidationCallback = CheckServerCertificateMatchesExpectedHash;
+                httpClient = new HttpClient(handler);
+            }
+        }
+
+        bool CheckServerCertificateMatchesExpectedHash(
+            HttpRequestMessage req,
+            X509Certificate2 cert,
+            X509Chain chain,
+            SslPolicyErrors policyErrors
+        )
+        {
+            // The things I do for love.
+            var asnTree = AsnElt.Decode(cert.RawData);
+            // SPKI comes after version, serial number, signature algorithm, issuer, validity, subject
+            var spki = asnTree.Sub[0].Sub[6].Encode();
+            var spkiPin = Convert.ToBase64String(Utils.Hash(SHA256.Create(), spki));
+
+            return policyErrors == SslPolicyErrors.None && spkiPin == expectedSpkiPin;
         }
 
         public async Task<IResolveResult> ResolveAsync(Question question)
