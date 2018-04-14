@@ -49,13 +49,7 @@ namespace Aelfweard.DnsClient
             SslPolicyErrors policyErrors
         )
         {
-            // The things I do for love.
-            var asnTree = AsnElt.Decode(cert.RawData);
-            // SPKI comes after version, serial number, signature algorithm, issuer, validity, subject
-            var spki = asnTree.Sub[0].Sub[6].Encode();
-            var spkiPin = Convert.ToBase64String(Utils.Hash(SHA256.Create(), spki));
-
-            return policyErrors == SslPolicyErrors.None && spkiPin == expectedSpkiPin;
+            return policyErrors == SslPolicyErrors.None && cert.GetSpkiPinHash() == expectedSpkiPin;
         }
 
         public async Task<IResolveResult> ResolveAsync(Question question)
