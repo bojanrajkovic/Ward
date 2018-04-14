@@ -5,6 +5,7 @@ environment:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     COVERALLS_REPO_TOKEN:
         secure: tHVOzWM7nri9zj8uUeC9pkQbzF8HdMzjL6mVF/RC74OGko2GxyOfbCfTN1NOULlg
+    RunCoverage: "True"
 install:
   - ps: choco install gitversion.portable -pre -y -r --no-progress
 before_build:
