@@ -15,8 +15,8 @@ namespace Aelfweard.Dns
         {
             using (var binReader = new BinaryReader(stream, Encoding.ASCII, true)) {
                 var name = Utils.ParseComplexName(null, stream);
-                var type = (Type)(Utils.SwapUInt16(binReader.ReadUInt16()));
-                var @class = (Class)(Utils.SwapUInt16(binReader.ReadUInt16()));
+                var type = (Type)Utils.SwapUInt16(binReader.ReadUInt16());
+                var @class = (Class)Utils.SwapUInt16(binReader.ReadUInt16());
 
                 return new Question(name, type, @class);
             }

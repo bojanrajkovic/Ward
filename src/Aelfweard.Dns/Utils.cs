@@ -10,7 +10,6 @@ namespace Aelfweard.Dns
     {
         public static string ParseComplexName(byte[] message, byte[] name, int offset)
         {
-            var pos = offset;
             using (var memoryStream = new MemoryStream(name)) {
                 memoryStream.Position = offset;
                 return ParseComplexName(message, memoryStream);
@@ -37,12 +36,12 @@ namespace Aelfweard.Dns
                     } if (nextByte == 0) {
                         // EOF
                         break;
-                    } else {
-                        // Otherwise, this is a number of bytes to read, so read it
-                        // and append the ASCII string to the builder.
-                        nameBuilder.Append(Encoding.ASCII.GetString(binaryReader.ReadBytes(nextByte)));
-                        nameBuilder.Append('.');
                     }
+
+                    // Otherwise, this is a number of bytes to read, so read it
+                    // and append the ASCII string to the builder.
+                    nameBuilder.Append(Encoding.ASCII.GetString(binaryReader.ReadBytes(nextByte)));
+                    nameBuilder.Append('.');
                 }
             }
 

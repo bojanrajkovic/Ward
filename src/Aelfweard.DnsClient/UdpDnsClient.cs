@@ -1,7 +1,4 @@
 using System;
-using System.IO;
-using System.Linq;
-using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
@@ -11,11 +8,10 @@ namespace Aelfweard.DnsClient
 {
     public class UdpDnsClient : IDnsClient
     {
-        UdpClient client;
+        readonly UdpClient client;
 
         public UdpDnsClient(string serverHost, ushort serverPort)
         {
-            // TODO: Implement timeout.
             client = new UdpClient();
             client.Connect(serverHost, serverPort);
         }

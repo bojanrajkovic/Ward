@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Threading.Tasks;
 
 using Aelfweard.Dns;
@@ -14,7 +13,7 @@ namespace Aelfweard.DnsClient.Tests
         public async Task Can_resolve_A_records_via_HTTPS()
         {
             var client = new HttpsDnsClient(IPAddress.Parse("1.1.1.1"), 443, "cloudflare-dns.com");
-            var resolve = await client.ResolveAsync("example.com", Dns.Type.A, Class.Internet);
+            var resolve = await client.ResolveAsync("example.com", Type.A, Class.Internet);
 
             Assert.NotNull(resolve);
             Assert.Single(resolve.Results);

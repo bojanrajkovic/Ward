@@ -1,20 +1,13 @@
-using System;
 using System.Threading.Tasks;
 
 using Aelfweard.Dns;
 using Aelfweard.Dns.Records;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Aelfweard.DnsClient.Tests
 {
     public class UdpClientTests
     {
-        readonly ITestOutputHelper output;
-
-        public UdpClientTests(ITestOutputHelper output) =>
-            this.output = output;
-
         [Fact]
         public async Task Can_resolve_A_record()
         {
@@ -38,8 +31,6 @@ namespace Aelfweard.DnsClient.Tests
             Assert.NotNull(resolve);
             Assert.NotEmpty(resolve.Results);
             Assert.Equal(5, resolve.Results.Count);
-
-            resolve.Results.ForEach(tup => System.Diagnostics.Debug.WriteLine(tup.ToString()));
         }
     }
 }

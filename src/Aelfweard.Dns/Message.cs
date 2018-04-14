@@ -55,10 +55,10 @@ namespace Aelfweard.Dns
             IEnumerable<Record> additional
         ) {
             Header = header;
-            Questions = ImmutableList.ToImmutableList(questions);
-            Answers = ImmutableList.ToImmutableList(answers);
-            Authority = ImmutableList.ToImmutableList(authority);
-            Additional = ImmutableList.ToImmutableList(additional);
+            Questions = questions.ToImmutableList();
+            Answers = answers.ToImmutableList();
+            Authority = authority.ToImmutableList();
+            Additional = additional.ToImmutableList();
         }
 
         public async Task<byte[]> SerializeAsync()

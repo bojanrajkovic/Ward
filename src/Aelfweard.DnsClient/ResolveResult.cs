@@ -10,6 +10,6 @@ namespace Aelfweard.DnsClient
         public ImmutableList<Record> Results { get; }
 
         public ResolveResult(IEnumerable<Record> results) =>
-            Results = ImmutableList.ToImmutableList(results);
+            Results = results.ToImmutableList();
     }
 }
