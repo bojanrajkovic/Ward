@@ -1,0 +1,40 @@
+os: Visual Studio 2017
+version: "{build}"
+configuration: Release
+environment:
+    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    COVERALLS_REPO_TOKEN:
+        secure: tHVOzWM7nri9zj8uUeC9pkQbzF8HdMzjL6mVF/RC74OGko2GxyOfbCfTN1NOULlg
+install:
+  - ps: choco install gitversion.portable -pre -y -r --no-progress
+before_build:
+  - dotnet restore
+  - ps: gitversion /output buildserver /updateAssemblyInfo
+before_test:
+  - ps: |
+      # Install OpenCover and ReportGenerator for coverage
+      nuget install -OutputDirectory packages -Version 4.6.519 OpenCover
+      nuget install -OutputDirectory packages -Version 3.1.2 ReportGenerator
+      nuget install -OutputDirectory packages -Version 0.7.0 coveralls.net
+test_script:
+  - ps: |
+      # Run tests & coverage
+      $dotnetPath=(Join-Path $env:ProgramFiles (Join-Path dotnet dotnet.exe))
+      .\packages\OpenCover.4.6.519\tools\OpenCover.Console.exe -register:user -target:"$dotnetPath" `
+         -targetargs:"test" -output:"coverage.xml" -oldstyle `
+         -filter:"+[Ward*]* -[Ward.DnsClient]Asn1.* -[Ward.*.Tests]*"
+after_test:
+  - ps: |
+      # Generate coverage report
+      .\packages\ReportGenerator.3.1.2\tools\ReportGenerator.exe -reports:coverage.xml -targetdir:coverage
+  - ps: |
+      # Upload to Coveralls
+      .\packages\coveralls.net.0.7.0\tools\csmacnz.Coveralls.exe --opencover -i coverage.xml --repoToken $env:COVERALLS_REPO_TOKEN `
+        --commitId $env:APPVEYOR_REPO_COMMIT --commitBranch $env:APPVEYOR_REPO_BRANCH --commitAuthor $env:APPVEYOR_REPO_COMMIT_AUTHOR `
+        --commitEmail $env:APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL --commitMessage $env:APPVEYOR_REPO_COMMIT_MESSAGE --jobId $env:APPVEYOR_JOB_ID
+  - dotnet msbuild /t:Restore,Pack /p:PackageOutputPath=artifacts /p:Version="%GitVersion_NuGetVersion%"
+artifacts:
+  - path: "**\\artifacts\\**\\*.*"
+  - path: coverage
+    name: Coverage Report
+    type: zip
