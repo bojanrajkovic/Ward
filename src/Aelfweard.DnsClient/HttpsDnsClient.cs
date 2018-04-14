@@ -31,11 +31,13 @@ namespace Aelfweard.DnsClient
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
                 var handler = new WinHttpHandler();
-                handler.ServerCertificateValidationCallback = CheckServerCertificateMatchesExpectedHash;
+                if (!string.IsNullOrWhiteSpace(expectedSpkiPin))
+                    handler.ServerCertificateValidationCallback = CheckServerCertificateMatchesExpectedHash;
                 httpClient = new HttpClient(handler);
             } else {
                 var handler = new HttpClientHandler();
-                handler.ServerCertificateCustomValidationCallback = CheckServerCertificateMatchesExpectedHash;
+                if (!string.IsNullOrWhiteSpace(expectedSpkiPin))
+                    handler.ServerCertificateCustomValidationCallback = CheckServerCertificateMatchesExpectedHash;
                 httpClient = new HttpClient(handler);
             }
         }
