@@ -3,11 +3,15 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <DebugType Condition="'$(RunCoverage)' == 'True'">full</DebugType>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
   </PropertyGroup>
   <ItemGroup Label="NuGet Packages">
     <PackageReference Include="System.Buffers" Version="4.4.0" />
     <PackageReference Include="System.Net.Http.WinHttpHandler" Version="4.4.0" />
-    <ProjectReference Include="..\Ward.Dns\Ward.Dns.csproj" />
     <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />
+    <ProjectReference Include="..\Ward.Dns\Ward.Dns.csproj" />
   </ItemGroup>
 </Project>
