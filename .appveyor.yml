@@ -31,17 +31,16 @@ after_test:
       # Generate coverage report
       .\packages\ReportGenerator.3.1.2\tools\ReportGenerator.exe -reports:coverage.xml -targetdir:coverage
   - ps: |
-      # Upload to Coveralls
-      echo "Commit ID: $env:APPVEYOR_REPO_COMMIT - Branch: $env:APPVEYOR_REPO_BRANCH"
-      echo "Author: $env:APPVEYOR_REPO_COMMIT_AUTHOR - Email: $env:APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL"
-      echo "Job ID: $env:APPVEYOR_JOB_ID"
-      echo "Message: $env:APPVEYOR_REPO_COMMIT_MESSAGE"
-      $coveralls = (Resolve-Path "packages\\coveralls.net.*\\tools\\csmacnz.coveralls.exe").ToString()
-      & $coveralls --opencover -i coverage.xml --repoToken $env:COVERALLS_REPO_TOKEN `
-        --commitId $env:APPVEYOR_REPO_COMMIT --commitBranch $env:APPVEYOR_REPO_BRANCH `
-        --commitAuthor $env:APPVEYOR_REPO_COMMIT_AUTHOR `
-        --commitEmail $env:APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL `
-        --commitMessage $env:APPVEYOR_REPO_COMMIT_MESSAGE --jobId $env:APPVEYOR_JOB_ID
+      # Upload to Coveralls for non-PR builds. AppVeyor doesn't expose secret
+      # variables to PR builds.
+      if ($env:APPVEYOR_PULL_REQUEST_TITLE -eq $null) {
+        $coveralls = (Resolve-Path "packages\\coveralls.net.*\\tools\\csmacnz.coveralls.exe").ToString()
+        & $coveralls --opencover -i coverage.xml --repoToken $env:COVERALLS_REPO_TOKEN `
+          --commitId $env:APPVEYOR_REPO_COMMIT --commitBranch $env:APPVEYOR_REPO_BRANCH `
+          --commitAuthor $env:APPVEYOR_REPO_COMMIT_AUTHOR `
+          --commitEmail $env:APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL `
+          --commitMessage $env:APPVEYOR_REPO_COMMIT_MESSAGE --jobId $env:APPVEYOR_JOB_ID
+      }
   - dotnet msbuild /t:Restore,Pack /p:PackageOutputPath=artifacts /p:Version="%GitVersion_NuGetVersion%"
 artifacts:
   - path: "**\\artifacts\\**\\*.*"
