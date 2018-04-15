@@ -21,6 +21,7 @@
 [[testcase]]
   name = "google.com-a-query"
   data = "HfoBIAABAAAAAAABBmdvb2dsZQNjb20AAAEAAQAAKRAAAAAAAAAMAAoACJOxHvPq368a"
+  complete = true
   [testcase.expected.header]
     id = 0x1dfa
     query = true
@@ -37,3 +38,13 @@
     answers = 0
     authority = 0
     additional = 1
+  [[testcase.expected.questions]]
+    name = "google.com."
+    class = "Internet"
+    type = "A"
+  [[testcase.expected.additional]]
+    type = "OPT"
+    class = 4096
+    ttl = 0
+    length = 12
+    data = "000a000893b11ef3eadfaf1a"
