@@ -6,6 +6,7 @@ namespace Ward.Dns.Records
         {
             switch (type) {
                 case Type.A:
+                case Type.AAAA:
                     return new AddressRecord(name, type, @class, ttl, length, data);
                 case Type.MX:
                     return new MailExchangerRecord(name, type, @class, ttl, length, data, message);
