@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 using Nett;
@@ -30,5 +31,8 @@ namespace Ward.Tests.Core
 
         public static TomlTable LoadTestCase(string testCaseName) =>
             testCaseMapping[testCaseName];
+
+        public static IEnumerable<TomlTable> FindTestCasesMatching(Predicate<TomlTable> predicate) =>
+            testCaseMapping.Values.Where(testCase => predicate(testCase));
     }
 }
