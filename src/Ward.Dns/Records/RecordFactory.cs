@@ -6,11 +6,22 @@ namespace Ward.Dns.Records
         {
             switch (type) {
                 case Type.A:
+                case Type.AAAA:
                     return new AddressRecord(name, type, @class, ttl, length, data);
                 case Type.MX:
                     return new MailExchangerRecord(name, type, @class, ttl, length, data, message);
+                case Type.CAA:
+                    return new CaaRecord(name, type, @class, ttl, length, data);
                 case Type.CNAME:
                     return new CnameRecord(name, type, @class, ttl, length, data, message);
+                case Type.NS:
+                    return new NsRecord(name, type, @class, ttl, length, data, message);
+                case Type.SOA:
+                    return new SoaRecord(name, type, @class, ttl, length, data, message);
+                case Type.PTR:
+                    return new PtrRecord(name, type, @class, ttl, length, data, message);
+                case Type.TXT:
+                    return new TxtRecord(name, type, @class, ttl, length, data, message);
                 default:
                     return new Record(name, type, @class, ttl, length, data);
             }
