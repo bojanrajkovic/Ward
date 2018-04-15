@@ -18,6 +18,8 @@ namespace Ward.Dns.Records
                     return new SoaRecord(name, type, @class, ttl, length, data, message);
                 case Type.PTR:
                     return new PtrRecord(name, type, @class, ttl, length, data, message);
+                case Type.TXT:
+                    return new TxtRecord(name, type, @class, ttl, length, data, message);
                 default:
                     return new Record(name, type, @class, ttl, length, data);
             }
