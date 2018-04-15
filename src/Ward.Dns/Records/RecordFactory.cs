@@ -13,6 +13,8 @@ namespace Ward.Dns.Records
                     return new CnameRecord(name, type, @class, ttl, length, data, message);
                 case Type.NS:
                     return new NsRecord(name, type, @class, ttl, length, data, message);
+                case Type.SOA:
+                    return new SoaRecord(name, type, @class, ttl, length, data, message);
                 default:
                     return new Record(name, type, @class, ttl, length, data);
             }
