@@ -290,3 +290,4 @@ __pycache__/
 # Coverage files
 coverage
 coverage.xml
+lcov.info
