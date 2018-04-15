@@ -1,6 +1,7 @@
 [[testcase]]
   name = "example.com-a-response-from-8.8.8.8"
   data = "qqqBgAABAAEAAAAAB2V4YW1wbGUDY29tAAABAAHADAABAAEAADu8AARduNgi"
+  complete = true
   [testcase.expected.header]
     id = 0xaaaa
     query = false
@@ -17,6 +18,18 @@
     answers = 1
     authority = 0
     additional = 0
+  [[testcase.expected.questions]]
+    name = "example.com."
+    class = "Internet"
+    type = "A"
+  [[testcase.expected.answers]]
+    name = "example.com."
+    class = "Internet"
+    type = "A"
+    ttl = 15292
+    length = 4
+    data = "5db8d822"
+    address = "93.184.216.34"
 
 [[testcase]]
   name = "google.com-a-query"

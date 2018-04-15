@@ -4,6 +4,7 @@ using System.Linq;
 
 using Nett;
 using Ward.Dns;
+using Ward.Dns.Records;
 using Xunit;
 
 namespace Ward.Dns.Tests
@@ -45,6 +46,17 @@ namespace Xunit
             Assert.Equal(expectedRecord.Get<string>("data"), record.Data.Aggregate(string.Empty, (s, v) => {
                 return s += v.ToString("X2").ToLower();
             }));
+
+            switch (record.Type) {
+                case Ward.Dns.Type.A:
+                    Assert.ARecord(expectedRecord, (AddressRecord)record);
+                    break;
+            }
+        }
+
+        public static void ARecord(TomlTable expectedRecord, AddressRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<string>("address"), record.Address.ToString());
         }
 
         public static void Header(TomlTable expectedHeader, Header header)
