@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.10.14" />
+    <PackageReference Condition="'$(TargetFramework)' == 'net461'" Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.10.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\test\Ward.Tests.Core\Ward.Tests.Core.csproj" />
+    <ProjectReference Include="..\..\src\Ward.Dns\Ward.Dns.csproj" />
+  </ItemGroup>
+
+</Project>
