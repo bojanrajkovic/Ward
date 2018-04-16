@@ -9,7 +9,7 @@ using Ward.Tests.Core;
 
 namespace Ward.Benchmarks
 {
-    [Config(typeof(MyConfig))]
+    [Config(typeof(Config))]
     [RunInCI]
     public class MessageParseBenchmark
     {
