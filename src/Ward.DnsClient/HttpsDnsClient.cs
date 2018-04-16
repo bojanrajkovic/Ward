@@ -57,16 +57,9 @@ namespace Ward.DnsClient
             var message = new Message(
                 new Header(
                     null,
-                    true,
                     Opcode.Query,
-                    false,
-                    false,
-                    true,
-                    true,
-                    false,
-                    false,
-                    false,
                     ReturnCode.NoError,
+                    new Header.HeaderFlags(true, false, false, true, true, false, false, false),
                     1,
                     0,
                     0,
