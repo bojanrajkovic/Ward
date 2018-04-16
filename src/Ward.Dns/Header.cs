@@ -9,18 +9,55 @@ namespace Ward.Dns
 {
     public class Header
     {
+        public readonly struct HeaderFlags
+        {
+            public bool Query { get; }
+            public bool Authoritative { get; }
+            public bool Truncated { get; }
+            public bool Recurse { get; }
+            public bool RecursionAvailable { get; }
+            public bool Z { get; }
+            public bool Authenticated { get; }
+            public bool CheckingDisabled { get; }
+
+            public HeaderFlags(
+                bool query,
+                bool authoritative,
+                bool truncated,
+                bool recurse,
+                bool recursionAvailable,
+                bool z,
+                bool authenticated,
+                bool checkingDisabled
+            ) {
+                Query = query;
+                Authoritative = authoritative;
+                Truncated = truncated;
+                Recurse = recurse;
+                RecursionAvailable = recursionAvailable;
+                Z = z;
+                Authenticated = authenticated;
+                CheckingDisabled = checkingDisabled;
+            }
+
+            internal HeaderFlags(ushort flags)
+            {
+                Query = (flags & 0b1000_0000_0000_0000) == 0;
+                Authoritative = (flags & 0b0000_0100_0000_0000) != 0;
+                Truncated = (flags & 0b0000_0010_0000_0000) != 0;
+                Recurse = (flags & 0b0000_0001_0000_0000) != 0;
+                RecursionAvailable = (flags & 0b0000_0000_1000_0000) != 0;
+                Z = (flags & 0b0000_0000_0100_0000) != 0;
+                Authenticated = (flags & 0b0000_0000_0010_0000) != 0;
+                CheckingDisabled = (flags & 0b0000_0000_0001_0000) != 0;
+            }
+        }
+
         static readonly Random idRand = new Random();
 
         public ushort Id { get; }
-        public bool Query { get; }
         public Opcode Opcode { get; }
-        public bool Authoritative { get; }
-        public bool Truncated { get; }
-        public bool Recurse { get; }
-        public bool RecursionAvailable { get; }
-        public bool Z { get; }
-        public bool Authenticated { get; }
-        public bool CheckingDisabled { get; }
+        public HeaderFlags Flags { get; }
         public ReturnCode ReturnCode { get; }
         public ushort TotalQuestions { get; }
         public ushort TotalAnswerRecords { get; }
@@ -31,76 +68,37 @@ namespace Ward.Dns
         {
             using (var reader = new BinaryReader(messageStream, Encoding.ASCII, true)) {
                 var id = SwapUInt16(reader.ReadUInt16());
+                var flagsBitfield = SwapUInt16(reader.ReadUInt16());
+                var opcode = (Opcode)(flagsBitfield & 0b0111_1000_0000_0000);
+                var returnCode = (ReturnCode)(flagsBitfield & 0b0000_0000_0000_1111);
+                var flags = new HeaderFlags(flagsBitfield);
+                var qCount = SwapUInt16(reader.ReadUInt16());
+                var anCount = SwapUInt16(reader.ReadUInt16());
+                var auCount = SwapUInt16(reader.ReadUInt16());
+                var adCount = SwapUInt16(reader.ReadUInt16());
 
-                var flags = SwapUInt16(reader.ReadUInt16());
-                var query = (flags & 0b1000_0000_0000_0000) == 0;
-                var opcode = (Opcode)(flags & 0b0111_1000_0000_0000);
-                var authoritative = (flags & 0b0000_0100_0000_0000) != 0;
-                var truncated = (flags & 0b0000_0010_0000_0000) != 0;
-                var recurse = (flags & 0b0000_0001_0000_0000) != 0;
-                var recursionAvailable = (flags & 0b0000_0000_1000_0000) != 0;
-                var z = (flags & 0b0000_0000_0100_0000) != 0;
-                var authenticated = (flags & 0b0000_0000_0010_0000) != 0;
-                var checkingDisabled = (flags & 0b0000_0000_0001_0000) != 0;
-                var returnCode = (ReturnCode)(flags & 0b0000_0000_0000_1111);
-
-                var totalQuestions = SwapUInt16(reader.ReadUInt16());
-                var totalAnswerRecords = SwapUInt16(reader.ReadUInt16());
-                var totalAuthorityRecords = SwapUInt16(reader.ReadUInt16());
-                var totalAdditionalRecords = SwapUInt16(reader.ReadUInt16());
-
-                return new Header(
-                    id,
-                    query,
-                    opcode,
-                    authoritative,
-                    truncated,
-                    recurse,
-                    recursionAvailable,
-                    z,
-                    authenticated,
-                    checkingDisabled,
-                    returnCode,
-                    totalQuestions,
-                    totalAnswerRecords,
-                    totalAuthorityRecords,
-                    totalAdditionalRecords
-                );
+                return new Header(id, opcode, returnCode, flags, qCount, anCount, auCount, adCount);
             }
         }
 
         public Header(
             ushort? id,
-            bool query,
             Opcode opcode,
-            bool authoritative,
-            bool truncated,
-            bool recurse,
-            bool recursionAvailable,
-            bool z,
-            bool authenticated,
-            bool checkingDisabled,
             ReturnCode returnCode,
-            ushort totalQuestions,
-            ushort totalAnswerRecords,
-            ushort totalAuthorityRecords,
-            ushort totalAdditionalRecords
+            HeaderFlags flags,
+            ushort qCount,
+            ushort anCount,
+            ushort auCount,
+            ushort adCount
         ) {
             Id = id.GetValueOrDefault((ushort)idRand.Next(0, ushort.MaxValue+1));
-            Query = query;
+            Flags = flags;
             Opcode = opcode;
-            Authoritative = authoritative;
-            Truncated = truncated;
-            Recurse = recurse;
-            RecursionAvailable = recursionAvailable;
-            Z = z;
-            Authenticated = authenticated;
-            CheckingDisabled = checkingDisabled;
             ReturnCode = returnCode;
-            TotalQuestions = totalQuestions;
-            TotalAnswerRecords = totalAnswerRecords;
-            TotalAuthorityRecords = totalAuthorityRecords;
-            TotalAdditionalRecords = totalAdditionalRecords;
+            TotalQuestions = qCount;
+            TotalAnswerRecords = anCount;
+            TotalAuthorityRecords = auCount;
+            TotalAdditionalRecords = adCount;
         }
 
         internal async Task WriteToStreamAsync(Stream stream)
@@ -108,15 +106,15 @@ namespace Ward.Dns
             await stream.WriteAsync(BitConverter.GetBytes(SwapUInt16(Id)), 0, 2);
 
             ushort flags = 0;
-            flags |= (ushort)((Query ? 0 : 1) << 15);
+            flags |= (ushort)((Flags.Query ? 0 : 1) << 15);
             flags |= (ushort)((ushort)Opcode << 14);
-            flags |= (ushort)((Authoritative ? 1 : 0) << 10);
-            flags |= (ushort)((Truncated ? 1 : 0) << 9);
-            flags |= (ushort)((Recurse ? 1 : 0) << 8);
-            flags |= (ushort)((RecursionAvailable ? 1 : 0) << 7);
-            flags |= (ushort)((Z ? 1 : 0) << 6);
-            flags |= (ushort)((Authenticated ? 1 : 0) << 5);
-            flags |= (ushort)((CheckingDisabled ? 1 : 0) << 4);
+            flags |= (ushort)((Flags.Authoritative ? 1 : 0) << 10);
+            flags |= (ushort)((Flags.Truncated ? 1 : 0) << 9);
+            flags |= (ushort)((Flags.Recurse ? 1 : 0) << 8);
+            flags |= (ushort)((Flags.RecursionAvailable ? 1 : 0) << 7);
+            flags |= (ushort)((Flags.Z ? 1 : 0) << 6);
+            flags |= (ushort)((Flags.Authenticated ? 1 : 0) << 5);
+            flags |= (ushort)((Flags.CheckingDisabled ? 1 : 0) << 4);
             flags |= (ushort)ReturnCode;
             await stream.WriteAsync(BitConverter.GetBytes(SwapUInt16(flags)), 0, 2);
 
