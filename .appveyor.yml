@@ -28,6 +28,11 @@ test_script:
          -filter:"+[Ward*]* -[Ward.DnsClient]Asn1.* -[Ward.*.Tests]*"
 after_test:
   - ps: |
+      # Run some benchmarks
+      Push-Location .\benchmarks\Ward.Benchmarks
+      dotnet run -c Release -f net461 -- --attribute=RunInCI
+      Pop-Location
+  - ps: |
       # Generate coverage report
       .\packages\ReportGenerator.3.1.2\tools\ReportGenerator.exe -reports:coverage.xml -targetdir:coverage
   - ps: |
@@ -44,6 +49,9 @@ after_test:
   - dotnet msbuild /t:Restore,Pack /p:PackageOutputPath=artifacts /p:Version="%GitVersion_NuGetVersion%"
 artifacts:
   - path: "**\\artifacts\\**\\*.*"
+  - path: ".\\benchmarks\\Ward.Benchmarks\\BenchmarkDotNet.Artifacts"
+    name: Benchmark Artifacts
+    type: zip
   - path: coverage
     name: Coverage Report
     type: zip

@@ -291,3 +291,6 @@ __pycache__/
 coverage
 coverage.xml
 lcov.info
+
+# benchmarks
+BenchmarkDotNet.Artifacts
