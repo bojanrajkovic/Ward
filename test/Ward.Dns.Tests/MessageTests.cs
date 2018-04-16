@@ -3,13 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Nett;
 using Xunit;
 
 namespace Ward.Dns.Tests
 {
     public class MessageTests
     {
-        const string requestMessage = "HfoBIAABAAAAAAABBmdvb2dsZQNjb20AAAEAAQAAKRAAAAAAAAAMAAoACJOxHvPq368a";
         const string responseMessage = "qqqBgAABAAEAAAAAB2V4YW1wbGUDY29tAAABAAHADAABAAEAADu8AARduNgi";
 
         [Fact]
@@ -42,37 +42,35 @@ namespace Ward.Dns.Tests
             Assert.Equal(messageBody, serialized);
         }
 
-        [Fact]
-        public void Can_parse_whole_message()
+        [Theory]
+        [MemberData(nameof (TestGenerators.GenerateMessageTests), MemberType = typeof(TestGenerators))]
+        public void Can_parse_whole_message(string messageName, byte[] messageData, TomlTable testCaseData)
         {
-            var messageBytes = Convert.FromBase64String(requestMessage);
-            var messageStream = new MemoryStream(messageBytes);
-            var message = Message.ParseFromStream(messageBytes, messageStream);
+            var message = Message.ParseFromBytes(messageData, 0);
+            var expected = testCaseData.Get<TomlTable>("expected");
+            var expectedHeader = expected.Get<TomlTable>("header");
+            var expectedQuestions = (TomlTableArray)expected.TryGetValue("questions");
+            var expectedAnswers = (TomlTableArray)expected.TryGetValue("answers");
+            var expectedAuthorities = (TomlTableArray)expected.TryGetValue("authority");
+            var expectedAdditional = (TomlTableArray)expected.TryGetValue("additional");
 
-            Assert.Single(message.Questions);
-            Assert.Empty(message.Answers);
-            Assert.Empty(message.Authority);
-            Assert.Single(message.Additional);
+            Assert.Header(expectedHeader, message.Header);
+            Assert.Equal(expectedQuestions.Count, message.Header.TotalQuestions);
+            Assert.Equal(expectedAnswers?.Count ?? 0, message.Header.TotalAnswerRecords);
+            Assert.Equal(expectedAuthorities?.Count ?? 0, message.Header.TotalAuthorityRecords);
+            Assert.Equal(expectedAdditional?.Count ?? 0, message.Header.TotalAdditionalRecords);
 
-            var question = message.Questions[0];
-            Assert.Equal("google.com.", question.Name);
-            Assert.Equal(Class.Internet, question.Class);
-            Assert.Equal(Type.A, question.Type);
+            if (expectedQuestions != null)
+                expectedQuestions.Items.ForEach((eq, idx) => Assert.Question(eq, message.Questions[idx]));
 
-            var addtl = message.Additional[0];
-            Assert.Null(addtl.Name);
-            Assert.Equal(Type.OPT, addtl.Type);
+            if (expectedAnswers != null)
+                expectedAnswers.Items.ForEach((er, idx) => Assert.Record(er, message.Answers[idx]));
 
-            // OPT records are weird, y'all.
-            Assert.Equal((Class)4096, addtl.Class);
-            Assert.Equal(0u, addtl.TimeToLive);
-            Assert.Equal(12, addtl.Length);
+            if (expectedAuthorities != null)
+                expectedAuthorities.Items.ForEach((ea, idx) => Assert.Record(ea, message.Authority[idx]));
 
-            // Eventually, I'll add proper record classes and
-            // we can check this data.
-            Assert.Equal("000a000893b11ef3eadfaf1a", addtl.Data.Aggregate(string.Empty, (s, v) => {
-                return s += v.ToString("X2").ToLower();
-            }));
+            if (expectedAdditional != null)
+                expectedAdditional.Items.ForEach((ea, idx) => Assert.Record(ea, message.Additional[idx]));
         }
     }
 }
