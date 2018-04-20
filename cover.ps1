@@ -8,7 +8,8 @@ $dotnetPath=(Join-Path $env:ProgramFiles (Join-Path dotnet dotnet.exe))
 
 .\packages\OpenCover.4.6.519\tools\OpenCover.Console.exe -register:user -target:"$dotnetPath" `
     -targetargs:"test --no-build -c:Debug" -output:"coverage.xml" -oldstyle `
-    -filter:"+[Ward*]* -[Ward.DnsClient]Asn1.* -[Ward.*.Tests]*"
+    -filter:"+[Ward*]* -[Ward.DnsClient]Asn1.* -[Ward.*.Tests]*" `
+    -excludebyattribute:*DebuggerStepThrough*
 
 .\packages\ReportGenerator.3.1.2\tools\ReportGenerator.exe -reports:coverage.xml -targetdir:coverage
 

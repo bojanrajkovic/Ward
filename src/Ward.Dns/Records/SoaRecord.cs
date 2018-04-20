@@ -35,6 +35,7 @@ namespace Ward.Dns.Records
             MinimumTtl = Utils.SwapUInt32(BitConverter.ToUInt32(dataArray, offset + 16));
         }
 
+        [System.Diagnostics.DebuggerStepThrough]
         public override string ToString() =>
             $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{PrimaryNameServer} {ResponsibleName} " +
             $"{Serial} {Refresh} {Retry} {Expire} {MinimumTtl}";

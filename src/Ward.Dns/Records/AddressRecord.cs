@@ -18,6 +18,7 @@ namespace Ward.Dns.Records
             Address = new IPAddress(data.ToArray());
         }
 
+        [System.Diagnostics.DebuggerStepThrough]
         public override string ToString() => $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{Address}";
     }
 }

@@ -24,6 +24,7 @@ namespace Ward.Dns.Records
             Hostname = ParseComplexName(message, dataArray, ref _);
         }
 
+        [System.Diagnostics.DebuggerStepThrough]
         public override string ToString() =>
             $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{Preference}\t{Hostname}";
     }
