@@ -102,6 +102,45 @@
     hostname = "alt4.aspmx.l.google.com."
 
 [[testcase]]
+  name = "google.com-soa-query"
+  data = "C+6BgAABAAEAAAAABmdvb2dsZQNjb20AAAYAAcAMAAYAAQAAADwAJgNuczHADAlkbnMtYWRtaW7ADAuJ7+AAAAOEAAADhAAABwgAAAA8"
+  complete = true
+  [testcase.expected.header]
+    id = 0x0bee
+    query = false
+    opcode = "Query"
+    authoritative = false
+    truncated = false
+    recurse = true
+    recursionAvailable = true
+    z = false
+    authenticated = false
+    checkingDisabled = false
+    returnCode = "NoError"
+    questions = 1
+    answers = 1
+    authority = 0
+    additional = 0
+  [[testcase.expected.questions]]
+    name = "google.com."
+    type = "SOA"
+    class = "Internet"
+  [[testcase.expected.answers]]
+    name = "google.com."
+    type = "SOA"
+    class = "Internet"
+    ttl = 60
+    length = 38
+    data = "036e7331c00c09646e732d61646d696ec00c0b89efe00000038400000384000007080000003c"
+    primary = "ns1.google.com."
+    responsible = "dns-admin.google.com."
+    serial = 193589216
+    refresh = 900
+    retry = 900
+    expire = 1800
+    minimum = 60
+
+[[testcase]]
   name = "google.com-ns-query"
   data = "3xuBgAABAAQAAAABBmdvb2dsZQNjb20AAAIAAQZnb29nbGUDY29tAAACAAEAAAJYABADbnMxBmdvb2dsZQNjb20ABmdvb2dsZQNjb20AAAIAAQAAAlgAEANuczIGZ29vZ2xlA2NvbQAGZ29vZ2xlA2NvbQAAAgABAAACWAAQA25zMwZnb29nbGUDY29tAAZnb29nbGUDY29tAAACAAEAAAJYABADbnM0Bmdvb2dsZQNjb20AAAApBgAAAAJYAAA="
   complete = true

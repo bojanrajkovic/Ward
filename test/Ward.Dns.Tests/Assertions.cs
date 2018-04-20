@@ -57,7 +57,21 @@ namespace Xunit
                 case Ward.Dns.Type.MX:
                     Assert.MXRecord(expectedRecord, (MailExchangerRecord)record);
                     break;
+                case Ward.Dns.Type.SOA:
+                    Assert.SOARecord(expectedRecord, (SoaRecord)record);
+                    break;
             }
+        }
+
+        public static void SOARecord(TomlTable expectedRecord, SoaRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<string>("primary"), record.PrimaryNameServer);
+            Assert.Equal(expectedRecord.Get<string>("responsible"), record.ResponsibleName);
+            Assert.Equal(expectedRecord.Get<uint>("serial"), record.Serial);
+            Assert.Equal(expectedRecord.Get<int>("refresh"), record.Refresh);
+            Assert.Equal(expectedRecord.Get<int>("retry"), record.Retry);
+            Assert.Equal(expectedRecord.Get<int>("expire"), record.Expire);
+            Assert.Equal(expectedRecord.Get<uint>("minimum"), record.MinimumTtl);
         }
 
         public static void MXRecord(TomlTable expectedRecord, MailExchangerRecord record)
