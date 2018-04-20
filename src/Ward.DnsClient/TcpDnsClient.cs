@@ -91,12 +91,12 @@ namespace Ward.DnsClient
                     0
                 ),
                 new [] { question },
-                Array.Empty<Record>(),
-                Array.Empty<Record>(),
-                Array.Empty<Record>()
+                Array.Empty<IRecord>(),
+                Array.Empty<IRecord>(),
+                Array.Empty<IRecord>()
             );
 
-            var messageData = await message.SerializeAsync();
+            var messageData = await MessageWriter.SerializeMessageAsync(message);
             var messageLengthOctet = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)messageData.Length));
 
             await stream.WriteAsync(messageLengthOctet, 0, messageLengthOctet.Length);
@@ -108,7 +108,7 @@ namespace Ward.DnsClient
             var responseBuf = BufferPool.Rent(responseLength);
             await stream.ReadAsync(responseBuf, 0, responseLength);
 
-            var result = new ResolveResult(Message.ParseFromBytes(responseBuf, 0).Answers);
+            var result = new ResolveResult(MessageParser.ParseMessage(responseBuf, 0).Answers);
 
             BufferPool.Return(responseLengthBuf);
             BufferPool.Return(responseBuf);

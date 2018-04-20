@@ -30,15 +30,15 @@ namespace Ward.DnsClient
                     0
                 ),
                 new [] { question },
-                Array.Empty<Record>(),
-                Array.Empty<Record>(),
-                Array.Empty<Record>()
+                Array.Empty<IRecord>(),
+                Array.Empty<IRecord>(),
+                Array.Empty<IRecord>()
             );
-            var messageData = await message.SerializeAsync();
+            var messageData = await MessageWriter.SerializeMessageAsync(message);
             await client.SendAsync(messageData, messageData.Length);
 
             var recvResult = await client.ReceiveAsync();
-            var response = Message.ParseFromBytes(recvResult.Buffer, 0);
+            var response = MessageParser.ParseMessage(recvResult.Buffer, 0);
 
             return new ResolveResult(response.Answers);
         }

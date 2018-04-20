@@ -66,14 +66,14 @@ namespace Ward.DnsClient
                     0
                 ),
                 new [] { question },
-                Array.Empty<Record>(),
-                Array.Empty<Record>(),
-                Array.Empty<Record>()
+                Array.Empty<IRecord>(),
+                Array.Empty<IRecord>(),
+                Array.Empty<IRecord>()
             );
 
             var msg = new HttpRequestMessage {
                 Version = http20Version,
-                Content = new ByteArrayContent(await message.SerializeAsync()) {
+                Content = new ByteArrayContent(await MessageWriter.SerializeMessageAsync(message)) {
                     Headers = {
                         ContentType = MediaTypeHeaderValue.Parse("application/dns-udpwireformat")
                     }
@@ -85,7 +85,7 @@ namespace Ward.DnsClient
             msg.Headers.TryAddWithoutValidation("Host", tlsHost);
             var response = await httpClient.SendAsync(msg);
             var content = await response.Content.ReadAsByteArrayAsync();
-            var result = Message.ParseFromBytes(content, 0);
+            var result = MessageParser.ParseMessage(content, 0);
 
             return new ResolveResult(result.Answers);
         }
