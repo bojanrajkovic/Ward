@@ -8,7 +8,7 @@ namespace Ward.DnsClient
 {
     static class Utils
     {
-        static byte[] Hash(HashAlgorithm hash, byte[] data)
+        internal static byte[] Hash(HashAlgorithm hash, byte[] data)
         {
             if (hash == null)
                 throw new ArgumentNullException(nameof(hash));
