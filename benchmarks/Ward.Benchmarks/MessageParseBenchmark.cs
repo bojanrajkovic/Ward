@@ -26,7 +26,7 @@ namespace Ward.Benchmarks
         [Benchmark]
         public int ParseMessage()
         {
-            var message = Message.ParseFromBytes(messageData, 0);
+            var message = MessageParser.ParseMessage(messageData, 0);
             return message.Header.TotalQuestions;
         }
     }
