@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -25,11 +26,10 @@ namespace Ward.Console
             if (args.Length == 3 && args[2][0] == '@')
                 dnsServer = args[2].Substring(1);
 
-            var queryType = Enum.Parse<Dns.Type>(args[1]);
-
             var queryTime = DateTime.Now;
-            var timer = Stopwatch.StartNew();
             var client = new UdpDnsClient(dnsServer, 53);
+            var queryType = Enum.Parse<Dns.Type>(args[1]);
+            var timer = Stopwatch.StartNew();
             var resolve = await client.ResolveAsync(args[0], queryType, Class.Internet);
             timer.Stop();
 
@@ -65,14 +65,25 @@ namespace Ward.Console
                     SConsole.WriteLine(record);
             }
 
+            var stringFormat = $"ddd MMM dd HH:mm:ss \"{TimeZoneName(queryTime)}\" yyyy";
+
             SConsole.WriteLine();
             SConsole.WriteLine($";; Query time: {timer.ElapsedMilliseconds} msec");
-            // Print DNS name (if known) in first part, resolved IP in parens.
             SConsole.WriteLine($";; SERVER: {dnsServer}#53({dnsServer})");
-            SConsole.WriteLine($";; WHEN: {queryTime.ToLongDateString()}");
+            SConsole.WriteLine($";; WHEN: {queryTime.ToString(stringFormat)}");
             SConsole.WriteLine($";; MSG SIZE  rcvd: {resolve.MessageSize}");
 
             return 0;
+        }
+
+        // This is a dumb hack.
+        public static String TimeZoneName(DateTime dt)
+        {
+            var tzName = TimeZoneInfo.Local.IsDaylightSavingTime(dt)
+                ? TimeZoneInfo.Local.DaylightName
+                : TimeZoneInfo.Local.StandardName;
+
+            return new string(tzName.Split(" ").Select(s => s[0]).ToArray());
         }
     }
 }

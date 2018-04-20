@@ -38,7 +38,8 @@ namespace Ward.DnsClient
             await client.SendAsync(messageData, messageData.Length);
 
             var recvResult = await client.ReceiveAsync();
-            var response = MessageParser.ParseMessage(recvResult.Buffer, 0);
+            var respBytes = recvResult.Buffer;
+            var response = MessageParser.ParseMessage(respBytes, 0);
 
             return new ResolveResult(response, recvResult.Buffer.Length);
         }
