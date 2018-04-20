@@ -72,7 +72,15 @@ namespace Xunit
                 case Ward.Dns.Type.PTR:
                     Assert.PTRRecord(expectedRecord, (PtrRecord)record);
                     break;
+                case Ward.Dns.Type.NS:
+                    Assert.NSRecord(expectedRecord, (NsRecord)record);
+                    break;
             }
+        }
+
+        public static void NSRecord(TomlTable expectedRecord, NsRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<string>("hostname"), record.Hostname);
         }
 
         public static void PTRRecord(TomlTable expectedRecord, PtrRecord record)
