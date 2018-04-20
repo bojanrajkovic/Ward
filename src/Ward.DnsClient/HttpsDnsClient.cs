@@ -87,7 +87,7 @@ namespace Ward.DnsClient
             var content = await response.Content.ReadAsByteArrayAsync();
             var result = MessageParser.ParseMessage(content, 0);
 
-            return new ResolveResult(result.Answers);
+            return new ResolveResult(result, content.Length);
         }
 
         public Task<IResolveResult> ResolveAsync(string host, Type type, Class @class) =>

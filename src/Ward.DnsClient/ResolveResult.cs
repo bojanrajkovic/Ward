@@ -7,9 +7,18 @@ namespace Ward.DnsClient
 {
     public class ResolveResult : IResolveResult
     {
-        public ImmutableList<Record> Results { get; }
+        readonly Message message;
 
-        public ResolveResult(IEnumerable<Record> results) =>
-            Results = results.ToImmutableList();
+        public int MessageSize { get; }
+        public Header Header => message.Header;
+        public ImmutableList<Record> Answers => message.Answers;
+        public ImmutableList<Record> Authority => message.Authority;
+        public ImmutableList<Record> Additional => message.Additional;
+        public ImmutableList<Question> Questions => message.Questions;
+
+        public ResolveResult(Message responseMessage, int messageSize) {
+            message = responseMessage;
+            MessageSize = messageSize;
+        }
     }
 }
