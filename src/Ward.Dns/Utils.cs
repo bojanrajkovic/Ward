@@ -27,7 +27,7 @@ namespace Ward.Dns
                 if ((nextByte & 0b1100_0000) == 0b1100_0000) {
                     // Read 2 bytes, _starting a byte behind us_ (because we already incremented)
                     // and then increment one byte to move past the 2-byte offset.
-                    var ptrToOffset = SwapUInt16(BitConverter.ToUInt16(message, (offset++) - 1));
+                    var ptrToOffset = SwapUInt16(BitConverter.ToUInt16(readFrom, (offset++) - 1));
                     var offsetToName = (ptrToOffset & 0b0011_1111_1111_1111);
 
                     // Refs are into the message, not into the data.

@@ -54,7 +54,16 @@ namespace Xunit
                 case Ward.Dns.Type.A:
                     Assert.ARecord(expectedRecord, (AddressRecord)record);
                     break;
+                case Ward.Dns.Type.MX:
+                    Assert.MXRecord(expectedRecord, (MailExchangerRecord)record);
+                    break;
             }
+        }
+
+        public static void MXRecord(TomlTable expectedRecord, MailExchangerRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<int>("preference"), record.Preference);
+            Assert.Equal(expectedRecord.Get<string>("hostname"), record.Hostname);
         }
 
         public static void ARecord(TomlTable expectedRecord, AddressRecord record)
