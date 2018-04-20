@@ -115,6 +115,10 @@ indent_size = 2
 [*.builds]
 indent_size = 2
 
+# TOML
+[*.toml]
+indent_size = 2
+
 # Xml files
 [*.{xml,stylecop,resx,ruleset}]
 indent_size = 2

@@ -60,7 +60,41 @@ namespace Xunit
                 case Ward.Dns.Type.SOA:
                     Assert.SOARecord(expectedRecord, (SoaRecord)record);
                     break;
+                case Ward.Dns.Type.CAA:
+                    Assert.CAARecord(expectedRecord, (CaaRecord)record);
+                    break;
+                case Ward.Dns.Type.CNAME:
+                    Assert.CNAMERecord(expectedRecord, (CnameRecord)record);
+                    break;
+                case Ward.Dns.Type.TXT:
+                    Assert.TXTRecord(expectedRecord, (TxtRecord)record);
+                    break;
+                case Ward.Dns.Type.PTR:
+                    Assert.PTRRecord(expectedRecord, (PtrRecord)record);
+                    break;
             }
+        }
+
+        public static void PTRRecord(TomlTable expectedRecord, PtrRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<string>("hostname"), record.Hostname);
+        }
+
+        public static void TXTRecord(TomlTable expectedRecord, TxtRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<string>("value"), record.TextData);
+        }
+
+        public static void CNAMERecord(TomlTable expectedRecord, CnameRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<string>("hostname"), record.Hostname);
+        }
+
+        public static void CAARecord(TomlTable expectedRecord, CaaRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<bool>("critical"), record.Critical);
+            Assert.Equal(expectedRecord.Get<string>("tag"), record.Tag);
+            Assert.Equal(expectedRecord.Get<string>("value"), record.Value);
         }
 
         public static void SOARecord(TomlTable expectedRecord, SoaRecord record)
