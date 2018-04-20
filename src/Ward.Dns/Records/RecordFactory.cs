@@ -1,9 +1,18 @@
+using System;
+
 namespace Ward.Dns.Records
 {
     class RecordFactory
     {
-        public static Record Create(string name, Type type, Class @class, uint ttl, ushort length, byte[] data, byte[] message)
-        {
+        public static IRecord Create(
+            string name,
+            Type type,
+            Class @class,
+            uint ttl,
+            ushort length,
+            ReadOnlyMemory<byte> data,
+            byte[] message
+        ) {
             switch (type) {
                 case Type.A:
                 case Type.AAAA:
@@ -21,9 +30,9 @@ namespace Ward.Dns.Records
                 case Type.PTR:
                     return new PtrRecord(name, type, @class, ttl, length, data, message);
                 case Type.TXT:
-                    return new TxtRecord(name, type, @class, ttl, length, data, message);
+                    return new TxtRecord(name, type, @class, ttl, length, data);
                 default:
-                    return new Record(name, type, @class, ttl, length, data);
+                    return new GenericRecord(name, type, @class, ttl, length, data);
             }
         }
     }

@@ -7,7 +7,7 @@ using static Ward.Dns.Utils;
 
 namespace Ward.Dns
 {
-    public class Header
+    public readonly struct Header
     {
         public readonly struct HeaderFlags
         {
@@ -64,23 +64,6 @@ namespace Ward.Dns
         public ushort TotalAuthorityRecords { get; }
         public ushort TotalAdditionalRecords { get; }
 
-        internal static Header ParseFromStream(Stream messageStream)
-        {
-            using (var reader = new BinaryReader(messageStream, Encoding.ASCII, true)) {
-                var id = SwapUInt16(reader.ReadUInt16());
-                var flagsBitfield = SwapUInt16(reader.ReadUInt16());
-                var opcode = (Opcode)(flagsBitfield & 0b0111_1000_0000_0000);
-                var returnCode = (ReturnCode)(flagsBitfield & 0b0000_0000_0000_1111);
-                var flags = new HeaderFlags(flagsBitfield);
-                var qCount = SwapUInt16(reader.ReadUInt16());
-                var anCount = SwapUInt16(reader.ReadUInt16());
-                var auCount = SwapUInt16(reader.ReadUInt16());
-                var adCount = SwapUInt16(reader.ReadUInt16());
-
-                return new Header(id, opcode, returnCode, flags, qCount, anCount, auCount, adCount);
-            }
-        }
-
         public Header(
             ushort? id,
             Opcode opcode,
@@ -99,29 +82,6 @@ namespace Ward.Dns
             TotalAnswerRecords = anCount;
             TotalAuthorityRecords = auCount;
             TotalAdditionalRecords = adCount;
-        }
-
-        internal async Task WriteToStreamAsync(Stream stream)
-        {
-            await stream.WriteAsync(BitConverter.GetBytes(SwapUInt16(Id)), 0, 2);
-
-            ushort flags = 0;
-            flags |= (ushort)((Flags.Query ? 0 : 1) << 15);
-            flags |= (ushort)((ushort)Opcode << 14);
-            flags |= (ushort)((Flags.Authoritative ? 1 : 0) << 10);
-            flags |= (ushort)((Flags.Truncated ? 1 : 0) << 9);
-            flags |= (ushort)((Flags.Recurse ? 1 : 0) << 8);
-            flags |= (ushort)((Flags.RecursionAvailable ? 1 : 0) << 7);
-            flags |= (ushort)((Flags.Z ? 1 : 0) << 6);
-            flags |= (ushort)((Flags.Authenticated ? 1 : 0) << 5);
-            flags |= (ushort)((Flags.CheckingDisabled ? 1 : 0) << 4);
-            flags |= (ushort)ReturnCode;
-            await stream.WriteAsync(BitConverter.GetBytes(SwapUInt16(flags)), 0, 2);
-
-            await stream.WriteAsync(BitConverter.GetBytes(SwapUInt16(TotalQuestions)), 0, 2);
-            await stream.WriteAsync(BitConverter.GetBytes(SwapUInt16(TotalAnswerRecords)), 0, 2);
-            await stream.WriteAsync(BitConverter.GetBytes(SwapUInt16(TotalAuthorityRecords)), 0, 2);
-            await stream.WriteAsync(BitConverter.GetBytes(SwapUInt16(TotalAdditionalRecords)), 0, 2);
         }
     }
 }

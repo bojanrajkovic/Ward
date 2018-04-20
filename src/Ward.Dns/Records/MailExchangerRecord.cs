@@ -4,24 +4,38 @@ using static Ward.Dns.Utils;
 
 namespace Ward.Dns.Records
 {
-    public class MailExchangerRecord : Record
+    public readonly struct MailExchangerRecord : IRecord
     {
-        readonly byte[] message;
+        public string Name { get; }
+        public Type Type { get; }
+        public Class Class { get; }
+        public uint TimeToLive { get; }
+        public ushort Length { get; }
+        public ReadOnlyMemory<byte> Data { get; }
+        public ushort Preference { get; }
+        public string Hostname { get; }
 
-        public MailExchangerRecord (
+        public unsafe MailExchangerRecord (
             string name,
             Dns.Type type,
             Class @class,
             uint timeToLive,
             ushort length,
-            byte[] data,
+            ReadOnlyMemory<byte> data,
             byte[] message
-        ) : base(name, type, @class, timeToLive, length, data) {
-            this.message = message;
-        }
+        ) {
+            Name = name;
+            Type = type;
+            Class = @class;
+            TimeToLive = timeToLive;
+            Length = length;
+            Data = data;
 
-        public ushort Preference => SwapUInt16(BitConverter.ToUInt16(Data, 0));
-        public string Hostname => ParseComplexName(message, Data, 2);
+            var dataArray = data.ToArray();
+            Preference = SwapUInt16(BitConverter.ToUInt16(dataArray, 0));
+            var _ = 2;
+            Hostname = ParseComplexName(message, dataArray, ref _);
+        }
 
         public override string ToString() =>
             $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{Preference}\t{Hostname}";

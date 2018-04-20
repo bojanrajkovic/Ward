@@ -1,21 +1,35 @@
+using System;
 using System.Net;
 
 namespace Ward.Dns.Records
 {
-    public class AddressRecord : Record
+    public readonly struct AddressRecord : IRecord
     {
+        public IPAddress Address { get; }
+        public string Name { get; }
+        public Type Type { get; }
+        public Class Class { get; }
+        public uint TimeToLive { get; }
+        public ushort Length { get; }
+        public ReadOnlyMemory<byte> Data { get; }
+
         public AddressRecord(
             string name,
             Type type,
             Class @class,
             uint timeToLive,
             ushort length,
-            byte[] data
-        ) : base(name, type, @class, timeToLive, length, data) {
+            ReadOnlyMemory<byte> data
+        ) {
+            Name = name;
+            Type = type;
+            Class = @class;
+            TimeToLive = timeToLive;
+            Length = length;
+            Data = data;
+            Address = new IPAddress(data.ToArray());
         }
 
-        public IPAddress Address => new IPAddress(Data);
-        public override string ToString() =>
-            $"{base.Name}\t{base.TimeToLive}\t{base.Class}\t{base.Type}\t{Address}";
+        public override string ToString() => $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{Address}";
     }
 }

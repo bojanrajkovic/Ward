@@ -5,23 +5,33 @@ using static Ward.Dns.Utils;
 
 namespace Ward.Dns.Records
 {
-    public class TxtRecord : Record
+    public readonly struct TxtRecord : IRecord
     {
-        readonly byte[] message;
+        public string Name { get; }
+        public Type Type { get; }
+        public Class Class { get; }
+        public uint TimeToLive { get; }
+        public ushort Length { get; }
+        public ReadOnlyMemory<byte> Data { get; }
+        public string TextData { get; }
 
-        public TxtRecord (
+        public unsafe TxtRecord (
             string name,
             Dns.Type type,
             Class @class,
             uint timeToLive,
             ushort length,
-            byte[] data,
-            byte[] message
-        ) : base(name, type, @class, timeToLive, length, data) {
-            this.message = message;
+            ReadOnlyMemory<byte> data
+        ) {
+            Name = name;
+            Type = type;
+            Class = @class;
+            TimeToLive = timeToLive;
+            Length = length;
+            Data = data;
+            using (var pin = data.Pin())
+                TextData = Encoding.ASCII.GetString((byte*)pin.Pointer + 1, *((byte*)pin.Pointer));
         }
-
-        public string TextData => Encoding.ASCII.GetString(Data, 1, Data[0]);
 
         public override string ToString() =>
             $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{TextData}";

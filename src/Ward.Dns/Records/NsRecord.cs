@@ -4,9 +4,15 @@ using static Ward.Dns.Utils;
 
 namespace Ward.Dns.Records
 {
-    public class NsRecord : Record
+    public readonly struct NsRecord : IRecord
     {
-        readonly byte[] message;
+        public string Name { get; }
+        public Type Type { get; }
+        public Class Class { get; }
+        public uint TimeToLive { get; }
+        public ushort Length { get; }
+        public ReadOnlyMemory<byte> Data { get; }
+        public string Hostname { get; }
 
         public NsRecord (
             string name,
@@ -14,15 +20,20 @@ namespace Ward.Dns.Records
             Class @class,
             uint timeToLive,
             ushort length,
-            byte[] data,
+            ReadOnlyMemory<byte> data,
             byte[] message
-        ) : base(name, type, @class, timeToLive, length, data) {
-            this.message = message;
+        ) {
+            Name = name;
+            Type = type;
+            Class = @class;
+            TimeToLive = timeToLive;
+            Length = length;
+            Data = data;
+
+            var _ = 0;
+            Hostname = ParseComplexName(message, data.ToArray(), ref _);
         }
 
-        public string NsName => ParseComplexName(message, Data, 0);
-
-        public override string ToString() =>
-            $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{NsName}";
+        public override string ToString() => $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{Hostname}";
     }
 }
