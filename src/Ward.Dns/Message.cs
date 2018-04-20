@@ -10,16 +10,16 @@ namespace Ward.Dns
     {
         public Header Header { get; }
         public ImmutableList<Question> Questions { get; }
-        public ImmutableList<IRecord> Answers { get; }
-        public ImmutableList<IRecord> Authority { get; }
-        public ImmutableList<IRecord> Additional { get; }
+        public ImmutableList<Record> Answers { get; }
+        public ImmutableList<Record> Authority { get; }
+        public ImmutableList<Record> Additional { get; }
 
         public Message(
             Header header,
             IEnumerable<Question> questions,
-            IEnumerable<IRecord> answers,
-            IEnumerable<IRecord> authority,
-            IEnumerable<IRecord> additional
+            IEnumerable<Record> answers,
+            IEnumerable<Record> authority,
+            IEnumerable<Record> additional
         ) {
             Header = header;
             Questions = questions.ToImmutableList();

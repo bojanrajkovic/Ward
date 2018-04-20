@@ -9,13 +9,29 @@ using static Ward.Dns.Utils;
 
 namespace Ward.Dns
 {
-    public interface IRecord
+    public class Record
     {
-        string Name { get; }
-        Type Type { get; }
-        Class Class { get; }
-        uint TimeToLive { get; }
-        ushort Length { get; }
-        ReadOnlyMemory<byte> Data { get; }
+        public string Name { get; }
+        public Type Type { get; }
+        public Class Class { get; }
+        public uint TimeToLive { get; }
+        public ushort Length { get; }
+        public ReadOnlyMemory<byte> Data { get; }
+
+        public Record(
+            string name,
+            Type type,
+            Class @class,
+            uint timeToLive,
+            ushort length,
+            ReadOnlyMemory<byte> data
+        ) {
+            Name = name;
+            Type = type;
+            Class = @class;
+            TimeToLive = timeToLive;
+            Length = length;
+            Data = data;
+        }
     }
 }

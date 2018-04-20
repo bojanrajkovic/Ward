@@ -66,9 +66,9 @@ namespace Ward.DnsClient
                     0
                 ),
                 new [] { question },
-                Array.Empty<IRecord>(),
-                Array.Empty<IRecord>(),
-                Array.Empty<IRecord>()
+                Array.Empty<Record>(),
+                Array.Empty<Record>(),
+                Array.Empty<Record>()
             );
 
             var msg = new HttpRequestMessage {

@@ -31,9 +31,9 @@ namespace Ward.Dns
 
             var header = new Header(id, opcode, returnCode, flags, qCount, anCount, auCount, adCount);
             var questions = new Question[qCount];
-            IRecord[] answers = new IRecord[anCount],
-                     authorities = new IRecord[auCount],
-                     additionals = new IRecord[adCount];
+            Record[] answers = new Record[anCount],
+                     authorities = new Record[auCount],
+                     additionals = new Record[adCount];
 
             for (var q = 0; q < qCount; q++) {
                 // ParseComplexName will advance `pos`,
@@ -57,7 +57,7 @@ namespace Ward.Dns
             return new Message(header, questions, answers, authorities, additionals);
         }
 
-        static IRecord ParseRecord(byte[] bytes, ref int offset)
+        static Record ParseRecord(byte[] bytes, ref int offset)
         {
             var name = ParseComplexName(bytes, null, ref offset);
             var type = (Type)SwapUInt16(BitConverter.ToUInt16(bytes, offset));

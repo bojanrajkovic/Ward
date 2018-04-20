@@ -5,14 +5,8 @@ using static Ward.Dns.Utils;
 
 namespace Ward.Dns.Records
 {
-    public class SoaRecord : IRecord
+    public class SoaRecord : Record
     {
-        public string Name { get; }
-        public Type Type { get; }
-        public Class Class { get; }
-        public uint TimeToLive { get; }
-        public ushort Length { get; }
-        public ReadOnlyMemory<byte> Data { get; }
         public string PrimaryNameServer { get; }
         public string ResponsibleName { get; }
         public uint Serial { get; }
@@ -29,14 +23,7 @@ namespace Ward.Dns.Records
             ushort length,
             ReadOnlyMemory<byte> data,
             byte[] message
-        ) {
-            Name = name;
-            Type = type;
-            Class = @class;
-            TimeToLive = timeToLive;
-            Length = length;
-            Data = data;
-
+        ) : base(name, type, @class, timeToLive, length, data) {
             var dataArray = data.ToArray();
             var offset = 0;
             PrimaryNameServer = Utils.ParseComplexName(message, dataArray, ref offset);

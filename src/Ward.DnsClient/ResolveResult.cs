@@ -7,9 +7,9 @@ namespace Ward.DnsClient
 {
     public class ResolveResult : IResolveResult
     {
-        public ImmutableList<IRecord> Results { get; }
+        public ImmutableList<Record> Results { get; }
 
-        public ResolveResult(IEnumerable<IRecord> results) =>
+        public ResolveResult(IEnumerable<Record> results) =>
             Results = results.ToImmutableList();
     }
 }

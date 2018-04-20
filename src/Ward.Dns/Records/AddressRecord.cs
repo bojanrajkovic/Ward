@@ -3,15 +3,9 @@ using System.Net;
 
 namespace Ward.Dns.Records
 {
-    public readonly struct AddressRecord : IRecord
+    public class AddressRecord : Record
     {
         public IPAddress Address { get; }
-        public string Name { get; }
-        public Type Type { get; }
-        public Class Class { get; }
-        public uint TimeToLive { get; }
-        public ushort Length { get; }
-        public ReadOnlyMemory<byte> Data { get; }
 
         public AddressRecord(
             string name,
@@ -20,13 +14,7 @@ namespace Ward.Dns.Records
             uint timeToLive,
             ushort length,
             ReadOnlyMemory<byte> data
-        ) {
-            Name = name;
-            Type = type;
-            Class = @class;
-            TimeToLive = timeToLive;
-            Length = length;
-            Data = data;
+        ) : base(name, type, @class, timeToLive, length, data) {
             Address = new IPAddress(data.ToArray());
         }
 

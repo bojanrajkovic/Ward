@@ -20,13 +20,13 @@ namespace Ward.Dns.Tests
             var headerFlags = new Header.HeaderFlags(false, false, false, true, true, false, false, false);
             var header = new Header(0xaaaa, Opcode.Query, ReturnCode.NoError, headerFlags, 1, 1, 0, 0);
             var question = new Question("example.com", Type.A, Class.Internet);
-            var answer = new GenericRecord("example.com", Type.A, Class.Internet, 15292, 4, new byte[] { 93, 184, 216, 34 });
+            var answer = new AddressRecord("example.com", Type.A, Class.Internet, 15292, 4, new byte[] { 93, 184, 216, 34 });
             var message = new Message(
                 header,
                 new [] { question },
-                new IRecord[] { answer },
-                Array.Empty<IRecord>(),
-                Array.Empty<IRecord>()
+                new Record[] { answer },
+                Array.Empty<Record>(),
+                Array.Empty<Record>()
             );
 
             var messageBody = Convert.FromBase64String(responseMessage);

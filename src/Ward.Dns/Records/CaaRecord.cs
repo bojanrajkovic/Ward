@@ -5,14 +5,8 @@ using static Ward.Dns.Utils;
 
 namespace Ward.Dns.Records
 {
-    public readonly struct CaaRecord : IRecord
+    public class CaaRecord : Record
     {
-        public string Name { get; }
-        public Type Type { get; }
-        public Class Class { get; }
-        public uint TimeToLive { get; }
-        public ushort Length { get; }
-        public ReadOnlyMemory<byte> Data { get; }
         public bool Critical { get; }
         public string Tag { get; }
         public string Value { get; }
@@ -24,14 +18,7 @@ namespace Ward.Dns.Records
             uint timeToLive,
             ushort length,
             ReadOnlyMemory<byte> data
-        ) {
-            Name = name;
-            Type = type;
-            Class = @class;
-            TimeToLive = timeToLive;
-            Length = length;
-            Data = data;
-
+        ) : base(name, type, @class, timeToLive, length, data) {
             // The top bit is set if the critical flag is true, all other
             // bit positions are reserved per RFC 6844.
             Critical = (data.Span[0] & 0b1000_0000) == 0b1000_0000;

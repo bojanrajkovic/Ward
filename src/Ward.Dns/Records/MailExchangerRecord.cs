@@ -4,14 +4,8 @@ using static Ward.Dns.Utils;
 
 namespace Ward.Dns.Records
 {
-    public readonly struct MailExchangerRecord : IRecord
+    public class MailExchangerRecord : Record
     {
-        public string Name { get; }
-        public Type Type { get; }
-        public Class Class { get; }
-        public uint TimeToLive { get; }
-        public ushort Length { get; }
-        public ReadOnlyMemory<byte> Data { get; }
         public ushort Preference { get; }
         public string Hostname { get; }
 
@@ -23,14 +17,7 @@ namespace Ward.Dns.Records
             ushort length,
             ReadOnlyMemory<byte> data,
             byte[] message
-        ) {
-            Name = name;
-            Type = type;
-            Class = @class;
-            TimeToLive = timeToLive;
-            Length = length;
-            Data = data;
-
+        ) : base(name, type, @class, timeToLive, length, data) {
             var dataArray = data.ToArray();
             Preference = SwapUInt16(BitConverter.ToUInt16(dataArray, 0));
             var _ = 2;

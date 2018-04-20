@@ -4,7 +4,7 @@ namespace Ward.Dns.Records
 {
     class RecordFactory
     {
-        public static IRecord Create(
+        public static Record Create(
             string name,
             Type type,
             Class @class,
@@ -32,7 +32,7 @@ namespace Ward.Dns.Records
                 case Type.TXT:
                     return new TxtRecord(name, type, @class, ttl, length, data);
                 default:
-                    return new GenericRecord(name, type, @class, ttl, length, data);
+                    return new Record(name, type, @class, ttl, length, data);
             }
         }
     }

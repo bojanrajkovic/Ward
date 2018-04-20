@@ -30,9 +30,9 @@ namespace Ward.DnsClient
                     0
                 ),
                 new [] { question },
-                Array.Empty<IRecord>(),
-                Array.Empty<IRecord>(),
-                Array.Empty<IRecord>()
+                Array.Empty<Record>(),
+                Array.Empty<Record>(),
+                Array.Empty<Record>()
             );
             var messageData = await MessageWriter.SerializeMessageAsync(message);
             await client.SendAsync(messageData, messageData.Length);

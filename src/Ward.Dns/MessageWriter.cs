@@ -30,7 +30,7 @@ namespace Ward.Dns
             }
         }
 
-        static async Task WriteRecordToStreamAsync(IRecord r, Stream s, Dictionary<string, int> offsetMap)
+        static async Task WriteRecordToStreamAsync(Record r, Stream s, Dictionary<string, int> offsetMap)
         {
             if (string.IsNullOrWhiteSpace(r.Name)) {
                 s.WriteByte(0);

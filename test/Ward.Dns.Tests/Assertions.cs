@@ -30,7 +30,7 @@ namespace Xunit
             Assert.Equal(expectedQuestion.Get<Ward.Dns.Type>("type"), question.Type);
         }
 
-        public static void Record(TomlTable expectedRecord, Ward.Dns.IRecord record)
+        public static void Record(TomlTable expectedRecord, Ward.Dns.Record record)
         {
             Assert.Equal(expectedRecord.TryGetValue("name")?.Get<string>(), record.Name);
             Assert.Equal(expectedRecord.Get<Ward.Dns.Type>("type"), record.Type);
