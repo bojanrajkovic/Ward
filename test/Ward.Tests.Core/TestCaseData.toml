@@ -348,7 +348,7 @@
     ttl = 600
     length = 16
     data = "036e733106676f6f676c6503636f6d00"
-    hostname = "ns1.google.com"
+    hostname = "ns1.google.com."
   [[testcase.expected.answers]]
     name = "google.com."
     class = "Internet"
