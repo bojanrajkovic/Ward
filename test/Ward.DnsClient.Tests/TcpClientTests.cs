@@ -70,7 +70,7 @@ namespace Ward.DnsClient.Tests
         [Fact]
         public async Task Timeout_connecting_actually_works()
         {
-            var client = new TcpDnsClient(IPAddress.Parse("127.0.0.2"), 53, false, connectTimeout: 1000);
+            var client = new TcpDnsClient(IPAddress.Parse("13.82.93.245"), 53, false, connectTimeout: 1000);
             var ex = await Assert.ThrowsAsync<TimeoutException>(async () => {
                 await client.ResolveAsync("example.com", Dns.Type.A, Class.Internet);
             });
