@@ -382,6 +382,45 @@
     data = ""
 
 [[testcase]]
+  name = "org.coderinserepeat.com-with-authorities-query"
+  data = "AAiBgwABAAAAAQAAA29yZw9jb2Rlcmluc2VyZXBlYXQDY29tAAABAAHAEAAGAAEAAAOEAEYHbnMtMTA4OQlhd3NkbnMtMDgDb3JnABFhd3NkbnMtaG9zdG1hc3RlcgZhbWF6b27AIAAAAAEAABwgAAADhAASdQAAAVGA"
+  complete = true
+  [testcase.expected.header]
+    id = 0x0008
+    query = false
+    opcode = "Query"
+    authoritative = false
+    truncated = false
+    recurse = true
+    recursionAvailable = true
+    z = false
+    authenticated = false
+    checkingDisabled = false
+    returnCode = "NameError"
+    questions = 1
+    answers = 0
+    authority = 1
+    additional = 0
+  [[testcase.expected.questions]]
+    name = "org.coderinserepeat.com."
+    type = "A"
+    class = "Internet"
+  [[testcase.expected.authority]]
+    name = "coderinserepeat.com."
+    type = "SOA"
+    class = "Internet"
+    ttl = 900
+    length = 70
+    data = "076e732d3130383909617773646e732d3038036f72670011617773646e732d686f73746d617374657206616d617a6f6ec0200000000100001c20000003840012750000015180"
+    primary = "ns-1089.awsdns-08.org."
+    responsible = "awsdns-hostmaster.amazon.com."
+    serial = 1
+    refresh = 7200
+    retry = 900
+    expire = 1209600
+    minimum = 86400
+
+[[testcase]]
   name = "google.com-a-query"
   data = "HfoBIAABAAAAAAABBmdvb2dsZQNjb20AAAEAAQAAKRAAAAAAAAAMAAoACJOxHvPq368a"
   complete = true
