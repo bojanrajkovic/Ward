@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Nett;
+using Ward.Dns.Records;
 using Xunit;
 
 namespace Ward.Dns.Tests
@@ -18,11 +19,17 @@ namespace Ward.Dns.Tests
             var headerFlags = new Header.HeaderFlags(false, false, false, true, true, false, false, false);
             var header = new Header(0xaaaa, Opcode.Query, ReturnCode.NoError, headerFlags, 1, 1, 0, 0);
             var question = new Question("example.com", Type.A, Class.Internet);
-            var answer = new Record("example.com", Type.A, Class.Internet, 15292, 4, new byte[] { 93, 184, 216, 34 });
-            var message = new Message(header, new [] { question }, new [] { answer }, Array.Empty<Record>(), Array.Empty<Record>());
+            var answer = new GenericRecord("example.com", Type.A, Class.Internet, 15292, 4, new byte[] { 93, 184, 216, 34 });
+            var message = new Message(
+                header,
+                new [] { question },
+                new IRecord[] { answer },
+                Array.Empty<IRecord>(),
+                Array.Empty<IRecord>()
+            );
 
             var messageBody = Convert.FromBase64String(responseMessage);
-            var serialized = await message.SerializeAsync();
+            var serialized = await MessageWriter.SerializeMessageAsync(message);
 
             Assert.Equal(messageBody, serialized);
         }
@@ -31,7 +38,7 @@ namespace Ward.Dns.Tests
         [MemberData(nameof (TestGenerators.GenerateMessageTests), MemberType = typeof(TestGenerators))]
         public void Can_parse_whole_message(string messageName, byte[] messageData, TomlTable testCaseData)
         {
-            var message = Message.ParseFromBytes(messageData, 0);
+            var message = MessageParser.ParseMessage(messageData, 0);
             var expected = testCaseData.Get<TomlTable>("expected");
             var expectedHeader = expected.Get<TomlTable>("header");
             var expectedQuestions = (TomlTableArray)expected.TryGetValue("questions");

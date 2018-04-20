@@ -56,6 +56,7 @@
     class = "Internet"
     type = "A"
   [[testcase.expected.additional]]
+    name = ""
     type = "OPT"
     class = 4096
     ttl = 0

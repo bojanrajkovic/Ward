@@ -30,7 +30,7 @@ namespace Xunit
             Assert.Equal(expectedQuestion.Get<Ward.Dns.Type>("type"), question.Type);
         }
 
-        public static void Record(TomlTable expectedRecord, Ward.Dns.Record record)
+        public static void Record(TomlTable expectedRecord, Ward.Dns.IRecord record)
         {
             Assert.Equal(expectedRecord.TryGetValue("name")?.Get<string>(), record.Name);
             Assert.Equal(expectedRecord.Get<Ward.Dns.Type>("type"), record.Type);
@@ -43,9 +43,12 @@ namespace Xunit
 
             Assert.Equal(expectedRecord.Get<uint>("ttl"), record.TimeToLive);
             Assert.Equal(expectedRecord.Get<ushort>("length"), record.Length);
-            Assert.Equal(expectedRecord.Get<string>("data"), record.Data.Aggregate(string.Empty, (s, v) => {
-                return s += v.ToString("X2").ToLower();
-            }));
+            Assert.Equal(
+                expectedRecord.Get<string>("data"),
+                record.Data.ToArray().Aggregate(string.Empty, (s, v) => {
+                    return s += v.ToString("X2").ToLower();
+                })
+            );
 
             switch (record.Type) {
                 case Ward.Dns.Type.A:
