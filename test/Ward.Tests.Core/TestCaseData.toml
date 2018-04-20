@@ -102,6 +102,70 @@
     hostname = "alt4.aspmx.l.google.com."
 
 [[testcase]]
+  name = "google.com-ns-query"
+  data = "3xuBgAABAAQAAAABBmdvb2dsZQNjb20AAAIAAQZnb29nbGUDY29tAAACAAEAAAJYABADbnMxBmdvb2dsZQNjb20ABmdvb2dsZQNjb20AAAIAAQAAAlgAEANuczIGZ29vZ2xlA2NvbQAGZ29vZ2xlA2NvbQAAAgABAAACWAAQA25zMwZnb29nbGUDY29tAAZnb29nbGUDY29tAAACAAEAAAJYABADbnM0Bmdvb2dsZQNjb20AAAApBgAAAAJYAAA="
+  complete = true
+  [testcase.expected.header]
+    id = 0xdf1b
+    query = false
+    opcode = "Query"
+    authoritative = false
+    truncated = false
+    recurse = true
+    recursionAvailable = true
+    z = false
+    authenticated = false
+    checkingDisabled = false
+    returnCode = "NoError"
+    questions = 1
+    answers = 4
+    authority = 0
+    additional = 1
+  [[testcase.expected.questions]]
+    name = "google.com."
+    class = "Internet"
+    type = "NS"
+  [[testcase.expected.answers]]
+    name = "google.com."
+    class = "Internet"
+    type = "NS"
+    ttl = 600
+    length = 16
+    data = "036e733106676f6f676c6503636f6d00"
+    hostname = "ns1.google.com"
+  [[testcase.expected.answers]]
+    name = "google.com."
+    class = "Internet"
+    type = "NS"
+    ttl = 600
+    length = 16
+    data = "036e733206676f6f676c6503636f6d00"
+    hostname = "ns2.google.com"
+  [[testcase.expected.answers]]
+    name = "google.com."
+    class = "Internet"
+    type = "NS"
+    ttl = 600
+    length = 16
+    data = "036e733306676f6f676c6503636f6d00"
+    hostname = "ns3.google.com"
+  [[testcase.expected.answers]]
+    name = "google.com."
+    class = "Internet"
+    type = "NS"
+    ttl = 600
+    length = 16
+    data = "036e733406676f6f676c6503636f6d00"
+    hostname = "ns4.google.com"
+  [[testcase.expected.additional]]
+    name = ""
+    type = "OPT"
+    class = 1536
+    ttl = 600
+    length = 0
+    data = ""
+
+[[testcase]]
   name = "google.com-a-query"
   data = "HfoBIAABAAAAAAABBmdvb2dsZQNjb20AAAEAAQAAKRAAAAAAAAAMAAoACJOxHvPq368a"
   complete = true
