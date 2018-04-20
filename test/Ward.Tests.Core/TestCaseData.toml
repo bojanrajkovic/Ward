@@ -356,7 +356,7 @@
     ttl = 600
     length = 16
     data = "036e733206676f6f676c6503636f6d00"
-    hostname = "ns2.google.com"
+    hostname = "ns2.google.com."
   [[testcase.expected.answers]]
     name = "google.com."
     class = "Internet"
@@ -364,7 +364,7 @@
     ttl = 600
     length = 16
     data = "036e733306676f6f676c6503636f6d00"
-    hostname = "ns3.google.com"
+    hostname = "ns3.google.com."
   [[testcase.expected.answers]]
     name = "google.com."
     class = "Internet"
@@ -372,7 +372,7 @@
     ttl = 600
     length = 16
     data = "036e733406676f6f676c6503636f6d00"
-    hostname = "ns4.google.com"
+    hostname = "ns4.google.com."
   [[testcase.expected.additional]]
     name = ""
     type = "OPT"
