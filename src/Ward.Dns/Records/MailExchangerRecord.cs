@@ -6,23 +6,25 @@ namespace Ward.Dns.Records
 {
     public class MailExchangerRecord : Record
     {
-        readonly byte[] message;
+        public ushort Preference { get; }
+        public string Hostname { get; }
 
-        public MailExchangerRecord (
+        public unsafe MailExchangerRecord (
             string name,
             Dns.Type type,
             Class @class,
             uint timeToLive,
             ushort length,
-            byte[] data,
+            ReadOnlyMemory<byte> data,
             byte[] message
         ) : base(name, type, @class, timeToLive, length, data) {
-            this.message = message;
+            var dataArray = data.ToArray();
+            Preference = SwapUInt16(BitConverter.ToUInt16(dataArray, 0));
+            var _ = 2;
+            Hostname = ParseComplexName(message, dataArray, ref _);
         }
 
-        public ushort Preference => SwapUInt16(BitConverter.ToUInt16(Data, 0));
-        public string Hostname => ParseComplexName(message, Data, 2);
-
+        [System.Diagnostics.DebuggerStepThrough]
         public override string ToString() =>
             $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{Preference}\t{Hostname}";
     }

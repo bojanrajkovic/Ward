@@ -7,22 +7,21 @@ namespace Ward.Dns.Records
 {
     public class TxtRecord : Record
     {
-        readonly byte[] message;
+        public string TextData { get; }
 
-        public TxtRecord (
+        public unsafe TxtRecord (
             string name,
             Dns.Type type,
             Class @class,
             uint timeToLive,
             ushort length,
-            byte[] data,
-            byte[] message
+            ReadOnlyMemory<byte> data
         ) : base(name, type, @class, timeToLive, length, data) {
-            this.message = message;
+            using (var pin = data.Pin())
+                TextData = Encoding.ASCII.GetString((byte*)pin.Pointer + 1, *((byte*)pin.Pointer));
         }
 
-        public string TextData => Encoding.ASCII.GetString(Data, 1, Data[0]);
-
+        [System.Diagnostics.DebuggerStepThrough]
         public override string ToString() =>
             $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{TextData}";
     }

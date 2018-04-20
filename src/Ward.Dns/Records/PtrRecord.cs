@@ -6,7 +6,7 @@ namespace Ward.Dns.Records
 {
     public class PtrRecord : Record
     {
-        readonly byte[] message;
+        public string Hostname { get; }
 
         public PtrRecord (
             string name,
@@ -14,15 +14,14 @@ namespace Ward.Dns.Records
             Class @class,
             uint timeToLive,
             ushort length,
-            byte[] data,
+            ReadOnlyMemory<byte> data,
             byte[] message
         ) : base(name, type, @class, timeToLive, length, data) {
-            this.message = message;
+            var _ = 0;
+            Hostname = ParseComplexName(message, data.ToArray(), ref _);
         }
 
-        public string PtrName => ParseComplexName(message, Data, 0);
-
-        public override string ToString() =>
-            $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{PtrName}";
+        [System.Diagnostics.DebuggerStepThrough]
+        public override string ToString() => $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{Hostname}";
     }
 }

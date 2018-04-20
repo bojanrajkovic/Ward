@@ -8,41 +8,41 @@ namespace Ward.Dns
 {
     static class Utils
     {
-        public static string ParseComplexName(byte[] message, byte[] name, int offset)
+        // To make life easier, ParseComplexName can update the offset
+        // on its own. It's non-trivial to track for callers. Some callers
+        // may not know the offset in the message, in which case they should
+        // specify a non-null data array, and a 0 offset. Pointers will *always*
+        // be looked up in the message, regardless of the specified offset.
+        public static string ParseComplexName(byte[] message, byte[] data, ref int offset)
         {
-            using (var memoryStream = new MemoryStream(name)) {
-                memoryStream.Position = offset;
-                return ParseComplexName(message, memoryStream);
-            }
-        }
-
-        public static string ParseComplexName(byte[] message, Stream stream)
-        {
+            var readFrom = data ?? message;
             var nameBuilder = new StringBuilder();
-            using (var binaryReader = new BinaryReader(stream, Encoding.ASCII, true)) {
-                while (true) {
-                    // Read the current byte.
-                    var nextByte = binaryReader.ReadByte();
+            while (true) {
+                // Read the current byte.
+                var nextByte = readFrom[offset++];
 
-                    // Are the top two bits set? If so, this is a pointer somewhere
-                    // else in the message, and is the end of this complex name. Rewind
-                    // one position so we can read the 2 byte pointer.
-                    if ((nextByte & 0b1100_0000) == 0b1100_0000) {
-                        stream.Position--;
-                        var ptrOffset = SwapUInt16(binaryReader.ReadUInt16());
-                        var offsetToName = (ushort)(ptrOffset & 0b0011_1111_1111_1111);
-                        nameBuilder.Append(Utils.ParseComplexName(message, message, offsetToName));
-                        break;
-                    } if (nextByte == 0) {
-                        // EOF
-                        break;
-                    }
+                // Are the top two bits set? If so, this is a pointer somewhere
+                // else in the message, and is the end of this complex name. Rewind
+                // one position so we can read the 2 byte pointer.
+                if ((nextByte & 0b1100_0000) == 0b1100_0000) {
+                    // Read 2 bytes, _starting a byte behind us_ (because we already incremented)
+                    // and then increment one byte to move past the 2-byte offset.
+                    var ptrToOffset = SwapUInt16(BitConverter.ToUInt16(readFrom, (offset++) - 1));
+                    var offsetToName = (ptrToOffset & 0b0011_1111_1111_1111);
 
-                    // Otherwise, this is a number of bytes to read, so read it
-                    // and append the ASCII string to the builder.
-                    nameBuilder.Append(Encoding.ASCII.GetString(binaryReader.ReadBytes(nextByte)));
-                    nameBuilder.Append('.');
+                    // Refs are into the message, not into the data.
+                    nameBuilder.Append(ParseComplexName(message, null, ref offsetToName));
+                    break;
+                } else if (nextByte == 0) {
+                    // EON
+                    break;
                 }
+
+                // Otherwise, this is a number of bytes to read, so read it
+                // and append the ASCII string to the builder.
+                nameBuilder.Append(Encoding.ASCII.GetString(readFrom, offset, nextByte));
+                nameBuilder.Append('.');
+                offset += nextByte;
             }
 
             return nameBuilder.ToString();

@@ -32,6 +32,395 @@
     address = "93.184.216.34"
 
 [[testcase]]
+  name = "coderinserepeat.com-mx-query-from-1.1.1.1"
+  data = "jKaBgAABAAUAAAAAD2NvZGVyaW5zZXJlcGVhdANjb20AAA8AAcAMAA8AAQAAASwAEwABBWFzcG14AWwGZ29vZ2xlwBzADAAPAAEAAAEsAAkABQRhbHQxwDPADAAPAAEAAAEsAAkABQRhbHQywDPADAAPAAEAAAEsAAkACgRhbHQzwDPADAAPAAEAAAEsAAkACgRhbHQ0wDM="
+  complete = true
+  [testcase.expected.header]
+    id = 0x8ca6
+    query = false
+    opcode = "Query"
+    authoritative = false
+    truncated = false
+    recurse = true
+    recursionAvailable = true
+    z = false
+    authenticated = false
+    checkingDisabled = false
+    returnCode = "NoError"
+    questions = 1
+    answers = 5
+    authority = 0
+    additional = 0
+  [[testcase.expected.questions]]
+    name = "coderinserepeat.com."
+    class = "Internet"
+    type = "MX"
+  [[testcase.expected.answers]]
+    name = "coderinserepeat.com."
+    type = "MX"
+    class = "Internet"
+    ttl = 300
+    length = 19
+    data = "0001056173706d78016c06676f6f676c65c01c"
+    preference = 1
+    hostname = "aspmx.l.google.com."
+  [[testcase.expected.answers]]
+    name = "coderinserepeat.com."
+    type = "MX"
+    class = "Internet"
+    ttl = 300
+    length = 9
+    data = "000504616c7431c033"
+    preference = 5
+    hostname = "alt1.aspmx.l.google.com."
+  [[testcase.expected.answers]]
+    name = "coderinserepeat.com."
+    type = "MX"
+    class = "Internet"
+    ttl = 300
+    length = 9
+    data = "000504616c7432c033"
+    preference = 5
+    hostname = "alt2.aspmx.l.google.com."
+  [[testcase.expected.answers]]
+    name = "coderinserepeat.com."
+    type = "MX"
+    class = "Internet"
+    ttl = 300
+    length = 9
+    data = "000a04616c7433c033"
+    preference = 10
+    hostname = "alt3.aspmx.l.google.com."
+  [[testcase.expected.answers]]
+    name = "coderinserepeat.com."
+    type = "MX"
+    class = "Internet"
+    ttl = 300
+    length = 9
+    data = "000a04616c7434c033"
+    preference = 10
+    hostname = "alt4.aspmx.l.google.com."
+
+[[testcase]]
+  name = "google.com-soa-query"
+  data = "C+6BgAABAAEAAAAABmdvb2dsZQNjb20AAAYAAcAMAAYAAQAAADwAJgNuczHADAlkbnMtYWRtaW7ADAuJ7+AAAAOEAAADhAAABwgAAAA8"
+  complete = true
+  [testcase.expected.header]
+    id = 0x0bee
+    query = false
+    opcode = "Query"
+    authoritative = false
+    truncated = false
+    recurse = true
+    recursionAvailable = true
+    z = false
+    authenticated = false
+    checkingDisabled = false
+    returnCode = "NoError"
+    questions = 1
+    answers = 1
+    authority = 0
+    additional = 0
+  [[testcase.expected.questions]]
+    name = "google.com."
+    type = "SOA"
+    class = "Internet"
+  [[testcase.expected.answers]]
+    name = "google.com."
+    type = "SOA"
+    class = "Internet"
+    ttl = 60
+    length = 38
+    data = "036e7331c00c09646e732d61646d696ec00c0b89efe00000038400000384000007080000003c"
+    primary = "ns1.google.com."
+    responsible = "dns-admin.google.com."
+    serial = 193589216
+    refresh = 900
+    retry = 900
+    expire = 1800
+    minimum = 60
+
+[[testcase]]
+  name = "coderinserepat.com-caa-query"
+  data = "/66BgAABAAMAAAAAD2NvZGVyaW5zZXJlcGVhdANjb20AAQEAAcAMAQEAAQAAASwAKwAFaW9kZWZtYWlsdG86YnJhamtvdmljQGNvZGVyaW5zZXJlcGVhdC5jb23ADAEBAAEAAAEsABEABWlzc3VlYW1hem9uLmNvbcAMAQEAAQAAASwAFgAFaXNzdWVsZXRzZW5jcnlwdC5vcmc="
+  complete = true
+  [testcase.expected.header]
+    id = 0xffae
+    query = false
+    opcode = "Query"
+    authoritative = false
+    truncated = false
+    recurse = true
+    recursionAvailable = true
+    z = false
+    authenticated = false
+    checkingDisabled = false
+    returnCode = "NoError"
+    questions = 1
+    answers = 3
+    authority = 0
+    additional = 0
+  [[testcase.expected.questions]]
+    name = "coderinserepeat.com."
+    class = "Internet"
+    type = "CAA"
+  [[testcase.expected.answers]]
+    name = "coderinserepeat.com."
+    class = "Internet"
+    type = "CAA"
+    ttl = 300
+    length = 43
+    data = "0005696f6465666d61696c746f3a6272616a6b6f76696340636f646572696e73657265706561742e636f6d"
+    critical = false
+    tag = "iodef"
+    value = "mailto:brajkovic@coderinserepeat.com"
+  [[testcase.expected.answers]]
+    name = "coderinserepeat.com."
+    class = "Internet"
+    type = "CAA"
+    ttl = 300
+    length = 17
+    data = "00056973737565616d617a6f6e2e636f6d"
+    critical = false
+    tag = "issue"
+    value = "amazon.com"
+  [[testcase.expected.answers]]
+    name = "coderinserepeat.com."
+    class = "Internet"
+    type = "CAA"
+    ttl = 300
+    length = 22
+    data = "000569737375656c657473656e63727970742e6f7267"
+    critical = false
+    tag = "issue"
+    value = "letsencrypt.org"
+
+[[testcase]]
+  name = "coderinserepeat.com-txt-query"
+  data = "dtmBgAABAAMAAAABD2NvZGVyaW5zZXJlcGVhdANjb20AABAAAQ9jb2Rlcmluc2VyZXBlYXQDY29tAAAQAAEAAAJXACQjdj1zcGYxIGluY2x1ZGU6X3NwZi5nb29nbGUuY29tIH5hbGwPY29kZXJpbnNlcmVwZWF0A2NvbQAAEAABAAACVwBFRGdvb2dsZS1zaXRlLXZlcmlmaWNhdGlvbj0yNWU0dVhkbzZrX1Jta3pPTFRUOEhJRUZ0YW9nVUd6YXpFN0tqMkxSUFZBD2NvZGVyaW5zZXJlcGVhdANjb20AABAAAQAAAlcARkVrZXliYXNlLXNpdGUtdmVyaWZpY2F0aW9uPXh1b19fWUo5MF8xTFVzaG5ZQ0VOR1Y3NEd3aU1YN3UzczBTRnRScXc2LVUAACkGAAAAAlcAAA=="
+  complete = true
+  [testcase.expected.header]
+    id = 0x76d9
+    query = false
+    opcode = "Query"
+    authoritative = false
+    truncated = false
+    recurse = true
+    recursionAvailable = true
+    z = false
+    authenticated = false
+    checkingDisabled = false
+    returnCode = "NoError"
+    questions = 1
+    answers = 3
+    authority = 0
+    additional = 1
+  [[testcase.expected.questions]]
+    name = "coderinserepeat.com."
+    type = "TXT"
+    class = "Internet"
+  [[testcase.expected.answers]]
+    name = "coderinserepeat.com."
+    type = "TXT"
+    class = "Internet"
+    ttl = 599
+    length = 36
+    data = "23763d7370663120696e636c7564653a5f7370662e676f6f676c652e636f6d207e616c6c"
+    value = "v=spf1 include:_spf.google.com ~all"
+  [[testcase.expected.answers]]
+    name = "coderinserepeat.com."
+    type = "TXT"
+    class = "Internet"
+    ttl = 599
+    length = 69
+    data = "44676f6f676c652d736974652d766572696669636174696f6e3d323565347558646f366b5f526d6b7a4f4c5454384849454674616f6755477a617a45374b6a324c52505641"
+    value = "google-site-verification=25e4uXdo6k_RmkzOLTT8HIEFtaogUGzazE7Kj2LRPVA"
+  [[testcase.expected.answers]]
+    name = "coderinserepeat.com."
+    type = "TXT"
+    class = "Internet"
+    ttl = 599
+    length = 70
+    data = "456b6579626173652d736974652d766572696669636174696f6e3d78756f5f5f594a39305f314c5573686e5943454e475637344777694d583775337330534674527177362d55"
+    value = "keybase-site-verification=xuo__YJ90_1LUshnYCENGV74GwiMX7u3s0SFtRqw6-U"
+  [[testcase.expected.additional]]
+    name = ""
+    type = "OPT"
+    class = 1536
+    ttl = 599
+    length = 0
+    data = ""
+
+[[testcase]]
+  name = "4.4.8.8.in-addr-arpa-ptr-query"
+  data = "Z0eBgAABAAEAAAAAATQBNAE4ATgHaW4tYWRkcgRhcnBhAAAMAAHADAAMAAEAAGIrACATZ29vZ2xlLXB1YmxpYy1kbnMtYgZnb29nbGUDY29tAA=="
+  complete = true
+  [testcase.expected.header]
+    id = 0x6747
+    query = false
+    opcode = "Query"
+    authoritative = false
+    truncated = false
+    recurse = true
+    recursionAvailable = true
+    z = false
+    authenticated = false
+    checkingDisabled = false
+    returnCode = "NoError"
+    questions = 1
+    answers = 1
+    authority = 0
+    additional = 0
+  [[testcase.expected.questions]]
+    name = "4.4.8.8.in-addr.arpa."
+    type = "PTR"
+    class = "Internet"
+  [[testcase.expected.answers]]
+    name = "4.4.8.8.in-addr.arpa."
+    type = "PTR"
+    class = "Internet"
+    ttl = 25131
+    length = 32
+    data = "13676f6f676c652d7075626c69632d646e732d6206676f6f676c6503636f6d00"
+    hostname = "google-public-dns-b.google.com."
+
+[[testcase]]
+  name = "email.mg.coderinserepeat.com-cname-query"
+  data = "hnWBgAABAAEAAAAABWVtYWlsAm1nD2NvZGVyaW5zZXJlcGVhdANjb20AAAUAAcAMAAUAAQAAASwADQdtYWlsZ3VuA29yZwA="
+  complete = true
+  [testcase.expected.header]
+    id = 0x8675
+    query = false
+    opcode = "Query"
+    authoritative = false
+    truncated = false
+    recurse = true
+    recursionAvailable = true
+    z = false
+    authenticated = false
+    checkingDisabled = false
+    returnCode = "NoError"
+    questions = 1
+    answers = 1
+    authority = 0
+    additional = 0
+  [[testcase.expected.questions]]
+    name = "email.mg.coderinserepeat.com."
+    type = "CNAME"
+    class = "Internet"
+  [[testcase.expected.answers]]
+    name = "email.mg.coderinserepeat.com."
+    type = "CNAME"
+    class = "Internet"
+    ttl = 300
+    length = 13
+    data = "076d61696c67756e036f726700"
+    hostname = "mailgun.org."
+
+[[testcase]]
+  name = "google.com-ns-query"
+  data = "3xuBgAABAAQAAAABBmdvb2dsZQNjb20AAAIAAQZnb29nbGUDY29tAAACAAEAAAJYABADbnMxBmdvb2dsZQNjb20ABmdvb2dsZQNjb20AAAIAAQAAAlgAEANuczIGZ29vZ2xlA2NvbQAGZ29vZ2xlA2NvbQAAAgABAAACWAAQA25zMwZnb29nbGUDY29tAAZnb29nbGUDY29tAAACAAEAAAJYABADbnM0Bmdvb2dsZQNjb20AAAApBgAAAAJYAAA="
+  complete = true
+  [testcase.expected.header]
+    id = 0xdf1b
+    query = false
+    opcode = "Query"
+    authoritative = false
+    truncated = false
+    recurse = true
+    recursionAvailable = true
+    z = false
+    authenticated = false
+    checkingDisabled = false
+    returnCode = "NoError"
+    questions = 1
+    answers = 4
+    authority = 0
+    additional = 1
+  [[testcase.expected.questions]]
+    name = "google.com."
+    class = "Internet"
+    type = "NS"
+  [[testcase.expected.answers]]
+    name = "google.com."
+    class = "Internet"
+    type = "NS"
+    ttl = 600
+    length = 16
+    data = "036e733106676f6f676c6503636f6d00"
+    hostname = "ns1.google.com."
+  [[testcase.expected.answers]]
+    name = "google.com."
+    class = "Internet"
+    type = "NS"
+    ttl = 600
+    length = 16
+    data = "036e733206676f6f676c6503636f6d00"
+    hostname = "ns2.google.com."
+  [[testcase.expected.answers]]
+    name = "google.com."
+    class = "Internet"
+    type = "NS"
+    ttl = 600
+    length = 16
+    data = "036e733306676f6f676c6503636f6d00"
+    hostname = "ns3.google.com."
+  [[testcase.expected.answers]]
+    name = "google.com."
+    class = "Internet"
+    type = "NS"
+    ttl = 600
+    length = 16
+    data = "036e733406676f6f676c6503636f6d00"
+    hostname = "ns4.google.com."
+  [[testcase.expected.additional]]
+    name = ""
+    type = "OPT"
+    class = 1536
+    ttl = 600
+    length = 0
+    data = ""
+
+[[testcase]]
+  name = "org.coderinserepeat.com-with-authorities-query"
+  data = "AAiBgwABAAAAAQAAA29yZw9jb2Rlcmluc2VyZXBlYXQDY29tAAABAAHAEAAGAAEAAAOEAEYHbnMtMTA4OQlhd3NkbnMtMDgDb3JnABFhd3NkbnMtaG9zdG1hc3RlcgZhbWF6b27AIAAAAAEAABwgAAADhAASdQAAAVGA"
+  complete = true
+  [testcase.expected.header]
+    id = 0x0008
+    query = false
+    opcode = "Query"
+    authoritative = false
+    truncated = false
+    recurse = true
+    recursionAvailable = true
+    z = false
+    authenticated = false
+    checkingDisabled = false
+    returnCode = "NameError"
+    questions = 1
+    answers = 0
+    authority = 1
+    additional = 0
+  [[testcase.expected.questions]]
+    name = "org.coderinserepeat.com."
+    type = "A"
+    class = "Internet"
+  [[testcase.expected.authority]]
+    name = "coderinserepeat.com."
+    type = "SOA"
+    class = "Internet"
+    ttl = 900
+    length = 70
+    data = "076e732d3130383909617773646e732d3038036f72670011617773646e732d686f73746d617374657206616d617a6f6ec0200000000100001c20000003840012750000015180"
+    primary = "ns-1089.awsdns-08.org."
+    responsible = "awsdns-hostmaster.amazon.com."
+    serial = 1
+    refresh = 7200
+    retry = 900
+    expire = 1209600
+    minimum = 86400
+
+[[testcase]]
   name = "google.com-a-query"
   data = "HfoBIAABAAAAAAABBmdvb2dsZQNjb20AAAEAAQAAKRAAAAAAAAAMAAoACJOxHvPq368a"
   complete = true
@@ -56,6 +445,7 @@
     class = "Internet"
     type = "A"
   [[testcase.expected.additional]]
+    name = ""
     type = "OPT"
     class = 4096
     ttl = 0

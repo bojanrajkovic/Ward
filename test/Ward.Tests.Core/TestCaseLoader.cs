@@ -11,7 +11,7 @@ namespace Ward.Tests.Core
     public static class TestCaseLoader
     {
         static readonly TomlTable testCaseData;
-        static readonly Dictionary<string, TomlTable> testCaseMapping = new Dictionary<string, TomlTable>();
+        static readonly Dictionary<string, TestCase> testCaseMapping = new Dictionary<string, TestCase>();
 
         static TestCaseLoader()
         {
@@ -26,13 +26,20 @@ namespace Ward.Tests.Core
 
             var testCases = testCaseData.Get<TomlTableArray>("testcase");
             foreach (var tomlTestCase in testCases.Items)
-                testCaseMapping.Add(tomlTestCase.Get<string>("name"), tomlTestCase);
+                testCaseMapping.Add(
+                    tomlTestCase.Get<string>("name"),
+                    new TestCase(
+                        tomlTestCase.Get<string>("name"),
+                        Convert.FromBase64String(tomlTestCase.Get<string>("data")),
+                        tomlTestCase
+                    )
+                );
         }
 
-        public static TomlTable LoadTestCase(string testCaseName) =>
+        public static TestCase LoadTestCase(string testCaseName) =>
             testCaseMapping[testCaseName];
 
-        public static IEnumerable<TomlTable> FindTestCasesMatching(Predicate<TomlTable> predicate) =>
+        public static IEnumerable<TestCase> FindTestCasesMatching(Predicate<TestCase> predicate) =>
             testCaseMapping.Values.Where(testCase => predicate(testCase));
     }
 }

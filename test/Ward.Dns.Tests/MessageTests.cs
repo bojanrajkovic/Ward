@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Nett;
+using Ward.Dns.Records;
+using Ward.Tests.Core;
 using Xunit;
 
 namespace Ward.Dns.Tests
@@ -18,21 +20,27 @@ namespace Ward.Dns.Tests
             var headerFlags = new Header.HeaderFlags(false, false, false, true, true, false, false, false);
             var header = new Header(0xaaaa, Opcode.Query, ReturnCode.NoError, headerFlags, 1, 1, 0, 0);
             var question = new Question("example.com", Type.A, Class.Internet);
-            var answer = new Record("example.com", Type.A, Class.Internet, 15292, 4, new byte[] { 93, 184, 216, 34 });
-            var message = new Message(header, new [] { question }, new [] { answer }, Array.Empty<Record>(), Array.Empty<Record>());
+            var answer = new AddressRecord("example.com", Type.A, Class.Internet, 15292, 4, new byte[] { 93, 184, 216, 34 });
+            var message = new Message(
+                header,
+                new [] { question },
+                new Record[] { answer },
+                Array.Empty<Record>(),
+                Array.Empty<Record>()
+            );
 
             var messageBody = Convert.FromBase64String(responseMessage);
-            var serialized = await message.SerializeAsync();
+            var serialized = await MessageWriter.SerializeMessageAsync(message);
 
             Assert.Equal(messageBody, serialized);
         }
 
         [Theory]
         [MemberData(nameof (TestGenerators.GenerateMessageTests), MemberType = typeof(TestGenerators))]
-        public void Can_parse_whole_message(string messageName, byte[] messageData, TomlTable testCaseData)
+        public void Can_parse_whole_message(TestCase testCase)
         {
-            var message = Message.ParseFromBytes(messageData, 0);
-            var expected = testCaseData.Get<TomlTable>("expected");
+            var message = MessageParser.ParseMessage(testCase.MessageData, 0);
+            var expected = testCase.RawTestCase.Get<TomlTable>("expected");
             var expectedHeader = expected.Get<TomlTable>("header");
             var expectedQuestions = (TomlTableArray)expected.TryGetValue("questions");
             var expectedAnswers = (TomlTableArray)expected.TryGetValue("answers");

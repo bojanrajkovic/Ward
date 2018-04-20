@@ -25,7 +25,8 @@ test_script:
       $dotnetPath=(Join-Path $env:ProgramFiles (Join-Path dotnet dotnet.exe))
       .\packages\OpenCover.4.6.519\tools\OpenCover.Console.exe -register:user -target:"$dotnetPath" `
          -targetargs:"test" -output:"coverage.xml" -oldstyle `
-         -filter:"+[Ward*]* -[Ward.DnsClient]Asn1.* -[Ward.*.Tests]*"
+         -filter:"+[Ward*]* -[Ward.DnsClient]Asn1.* -[Ward.*.Tests]*" `
+         -excludebyattribute:*DebuggerStepThrough*
 after_test:
   - ps: |
       # Run some benchmarks

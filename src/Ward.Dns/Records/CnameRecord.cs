@@ -6,7 +6,7 @@ namespace Ward.Dns.Records
 {
     public class CnameRecord : Record
     {
-        readonly byte[] message;
+        public string Hostname { get; }
 
         public CnameRecord (
             string name,
@@ -14,14 +14,14 @@ namespace Ward.Dns.Records
             Class @class,
             uint timeToLive,
             ushort length,
-            byte[] data,
+            ReadOnlyMemory<byte> data,
             byte[] message
         ) : base(name, type, @class, timeToLive, length, data) {
-            this.message = message;
+            var _ = 0;
+            Hostname = ParseComplexName(message, data.ToArray(), ref _);
         }
 
-        public string Hostname => ParseComplexName(message, Data, 0);
-
+        [System.Diagnostics.DebuggerStepThrough]
         public override string ToString() =>
             $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{Hostname}";
     }

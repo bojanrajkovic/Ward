@@ -43,15 +43,83 @@ namespace Xunit
 
             Assert.Equal(expectedRecord.Get<uint>("ttl"), record.TimeToLive);
             Assert.Equal(expectedRecord.Get<ushort>("length"), record.Length);
-            Assert.Equal(expectedRecord.Get<string>("data"), record.Data.Aggregate(string.Empty, (s, v) => {
-                return s += v.ToString("X2").ToLower();
-            }));
+            Assert.Equal(
+                expectedRecord.Get<string>("data"),
+                record.Data.ToArray().Aggregate(string.Empty, (s, v) => {
+                    return s += v.ToString("X2").ToLower();
+                })
+            );
 
             switch (record.Type) {
                 case Ward.Dns.Type.A:
                     Assert.ARecord(expectedRecord, (AddressRecord)record);
                     break;
+                case Ward.Dns.Type.MX:
+                    Assert.MXRecord(expectedRecord, (MailExchangerRecord)record);
+                    break;
+                case Ward.Dns.Type.SOA:
+                    Assert.SOARecord(expectedRecord, (SoaRecord)record);
+                    break;
+                case Ward.Dns.Type.CAA:
+                    Assert.CAARecord(expectedRecord, (CaaRecord)record);
+                    break;
+                case Ward.Dns.Type.CNAME:
+                    Assert.CNAMERecord(expectedRecord, (CnameRecord)record);
+                    break;
+                case Ward.Dns.Type.TXT:
+                    Assert.TXTRecord(expectedRecord, (TxtRecord)record);
+                    break;
+                case Ward.Dns.Type.PTR:
+                    Assert.PTRRecord(expectedRecord, (PtrRecord)record);
+                    break;
+                case Ward.Dns.Type.NS:
+                    Assert.NSRecord(expectedRecord, (NsRecord)record);
+                    break;
             }
+        }
+
+        public static void NSRecord(TomlTable expectedRecord, NsRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<string>("hostname"), record.Hostname);
+        }
+
+        public static void PTRRecord(TomlTable expectedRecord, PtrRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<string>("hostname"), record.Hostname);
+        }
+
+        public static void TXTRecord(TomlTable expectedRecord, TxtRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<string>("value"), record.TextData);
+        }
+
+        public static void CNAMERecord(TomlTable expectedRecord, CnameRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<string>("hostname"), record.Hostname);
+        }
+
+        public static void CAARecord(TomlTable expectedRecord, CaaRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<bool>("critical"), record.Critical);
+            Assert.Equal(expectedRecord.Get<string>("tag"), record.Tag);
+            Assert.Equal(expectedRecord.Get<string>("value"), record.Value);
+        }
+
+        public static void SOARecord(TomlTable expectedRecord, SoaRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<string>("primary"), record.PrimaryNameServer);
+            Assert.Equal(expectedRecord.Get<string>("responsible"), record.ResponsibleName);
+            Assert.Equal(expectedRecord.Get<uint>("serial"), record.Serial);
+            Assert.Equal(expectedRecord.Get<int>("refresh"), record.Refresh);
+            Assert.Equal(expectedRecord.Get<int>("retry"), record.Retry);
+            Assert.Equal(expectedRecord.Get<int>("expire"), record.Expire);
+            Assert.Equal(expectedRecord.Get<uint>("minimum"), record.MinimumTtl);
+        }
+
+        public static void MXRecord(TomlTable expectedRecord, MailExchangerRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<int>("preference"), record.Preference);
+            Assert.Equal(expectedRecord.Get<string>("hostname"), record.Hostname);
         }
 
         public static void ARecord(TomlTable expectedRecord, AddressRecord record)

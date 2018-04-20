@@ -34,11 +34,11 @@ namespace Ward.DnsClient
                 Array.Empty<Record>(),
                 Array.Empty<Record>()
             );
-            var messageData = await message.SerializeAsync();
+            var messageData = await MessageWriter.SerializeMessageAsync(message);
             await client.SendAsync(messageData, messageData.Length);
 
             var recvResult = await client.ReceiveAsync();
-            var response = Message.ParseFromBytes(recvResult.Buffer, 0);
+            var response = MessageParser.ParseMessage(recvResult.Buffer, 0);
 
             return new ResolveResult(response.Answers);
         }
