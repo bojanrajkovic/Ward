@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using Nett;
 using Ward.Dns.Records;
+using Ward.Tests.Core;
 using Xunit;
 
 namespace Ward.Dns.Tests
@@ -36,10 +37,10 @@ namespace Ward.Dns.Tests
 
         [Theory]
         [MemberData(nameof (TestGenerators.GenerateMessageTests), MemberType = typeof(TestGenerators))]
-        public void Can_parse_whole_message(string messageName, byte[] messageData, TomlTable testCaseData)
+        public void Can_parse_whole_message(TestCase testCase)
         {
-            var message = MessageParser.ParseMessage(messageData, 0);
-            var expected = testCaseData.Get<TomlTable>("expected");
+            var message = MessageParser.ParseMessage(testCase.MessageData, 0);
+            var expected = testCase.RawTestCase.Get<TomlTable>("expected");
             var expectedHeader = expected.Get<TomlTable>("header");
             var expectedQuestions = (TomlTableArray)expected.TryGetValue("questions");
             var expectedAnswers = (TomlTableArray)expected.TryGetValue("answers");

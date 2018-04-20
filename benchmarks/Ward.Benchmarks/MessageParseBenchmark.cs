@@ -14,13 +14,12 @@ namespace Ward.Benchmarks
     public class MessageParseBenchmark
     {
         byte[] messageData;
-        Stream messageStream;
 
         [GlobalSetup]
         public void Setup()
         {
             var message = TestCaseLoader.LoadTestCase("example.com-a-response-from-8.8.8.8");
-            messageData = Convert.FromBase64String(message.Get<string>("data"));
+            messageData = message.MessageData;
         }
 
         [Benchmark]
