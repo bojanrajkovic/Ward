@@ -18,9 +18,9 @@ namespace Ward.DnsClient.Tests
             var resolve = await client.ResolveAsync("example.com", Dns.Type.A, Class.Internet);
 
             Assert.NotNull(resolve);
-            Assert.Single(resolve.Results);
+            Assert.Single(resolve.Answers);
 
-            var a = Assert.IsType<AddressRecord>(resolve.Results[0]);
+            var a = Assert.IsType<AddressRecord>(resolve.Answers[0]);
             Assert.Equal("93.184.216.34", a.Address.ToString());
             Assert.Equal(Class.Internet, a.Class);
         }
@@ -32,9 +32,9 @@ namespace Ward.DnsClient.Tests
             var resolve = await client.ResolveAsync("example.com", Dns.Type.A, Class.Internet);
 
             Assert.NotNull(resolve);
-            Assert.Single(resolve.Results);
+            Assert.Single(resolve.Answers);
 
-            var a = Assert.IsType<AddressRecord>(resolve.Results[0]);
+            var a = Assert.IsType<AddressRecord>(resolve.Answers[0]);
             Assert.Equal("93.184.216.34", a.Address.ToString());
             Assert.Equal(Class.Internet, a.Class);
         }
@@ -46,9 +46,9 @@ namespace Ward.DnsClient.Tests
             var resolve = await client.ResolveAsync("example.com", Dns.Type.A, Class.Internet);
 
             Assert.NotNull(resolve);
-            Assert.Single(resolve.Results);
+            Assert.Single(resolve.Answers);
 
-            var a = Assert.IsType<AddressRecord>(resolve.Results[0]);
+            var a = Assert.IsType<AddressRecord>(resolve.Answers[0]);
             Assert.Equal("93.184.216.34", a.Address.ToString());
             Assert.Equal(Class.Internet, a.Class);
         }
