@@ -7,4 +7,19 @@
   <ItemGroup>
     <ProjectReference Include="..\Ward.DnsClient\Ward.DnsClient.csproj" />
   </ItemGroup>
+  <Target Name="_BuildDotNetCoreToolPackage">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Properties="Configuration=$(Configuration)"
+             Targets="Restore;Build;Publish" />
+    <ItemGroup>
+      <JunkFiles Include="$(OutputPath)\*.deps.json" />
+      <JunkFiles Include="$(OutputPath)\*.runtimeconfig.dev.json" />
+      <NugetArguments Include="-Version $(PackageVersion)" />
+      <NugetArguments Include="-OutputDirectory _artifacts" />
+      <NugetArguments Include="-Properties" />
+      <NugetArguments Include="PublishDir=$(OutputPath)publish\" />
+    </ItemGroup>
+    <Delete Files="@(JunkFiles)" />
+    <Exec Command="nuget pack Ward.Console.nuspec @(NugetArguments, ' ')" />
+  </Target>
 </Project>

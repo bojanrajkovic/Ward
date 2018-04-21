@@ -108,7 +108,8 @@ namespace Ward.DnsClient
             var responseBuf = BufferPool.Rent(responseLength);
             await stream.ReadAsync(responseBuf, 0, responseLength);
 
-            var result = new ResolveResult(MessageParser.ParseMessage(responseBuf, 0).Answers);
+            var response = MessageParser.ParseMessage(responseBuf, 0);
+            var result = new ResolveResult(response, responseBuf.Length);
 
             BufferPool.Return(responseLengthBuf);
             BufferPool.Return(responseBuf);

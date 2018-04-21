@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Ward.Console</id>
+    <tags>ward dns</tags>
+    <version>$version$</version>
+    <authors>Bojan Rajkovic</authors>
+    <owners>Bojan Rajkovic</owners>
+    <licenseUrl>https://raw.githubusercontent.com/bojanrajkovic/Ward/master/LICENSE.md</licenseUrl>
+    <projectUrl>https://github.com/bojanrajkovic/Ward</projectUrl>
+    <description>A .NET Core-powered dig-like DNS client</description>
+    <copyright>Bojan Rajkovic (c) 2017-2018</copyright>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <packageTypes>
+      <packageType name="DotnetTool" />
+    </packageTypes>
+    <repository type="git" url="https://github.com/bojanrajkovic/Ward" />
+    <dependencies>
+        <dependency id="System.Buffers" version="4.4.0" exclude="Build,Analyzers" />
+        <dependency id="System.Net.Http.WinHttpHandler" version="4.4.0" exclude="Build,Analyzers" />
+        <dependency id="System.Collections.Immutable" version="1.4.0" exclude="Build,Analyzers" />
+        <dependency id="System.Memory" version="4.5.0-preview2-26406-04" exclude="Build,Analyzers" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="$publishdir$" target="tools/any/any/" />
+    <file src="DotnetToolSettings.xml" target="tools/any/any/DotnetToolSettings.xml" />
+  </files>
+</package>

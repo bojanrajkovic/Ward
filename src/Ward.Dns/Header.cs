@@ -51,6 +51,19 @@ namespace Ward.Dns
                 Authenticated = (flags & 0b0000_0000_0010_0000) != 0;
                 CheckingDisabled = (flags & 0b0000_0000_0001_0000) != 0;
             }
+
+            [System.Diagnostics.DebuggerStepThrough]
+            public override string ToString() {
+                var sb = new StringBuilder();
+                sb.Append(Query ? "" : "qr ");
+                sb.Append(Authoritative ? "aa " : "");
+                sb.Append(Truncated ? "tc " : "");
+                sb.Append(Recurse ? "rd ": "");
+                sb.Append(RecursionAvailable ? "ra " : "");
+                sb.Append(Authenticated ? "ad " : "");
+                sb.Append(CheckingDisabled ? "cd " : "");
+                return sb.Remove(sb.Length-1, 1).ToString();
+            }
         }
 
         static readonly Random idRand = new Random();

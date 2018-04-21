@@ -6,6 +6,11 @@ namespace Ward.DnsClient
 {
     public interface IResolveResult
     {
-        ImmutableList<Record> Results { get; }
+        int MessageSize { get; }
+        Header Header { get; }
+        ImmutableList<Record> Answers { get; }
+        ImmutableList<Record> Authority { get; }
+        ImmutableList<Record> Additional { get; }
+        ImmutableList<Question> Questions { get; }
     }
 }
