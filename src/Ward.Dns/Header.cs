@@ -52,6 +52,7 @@ namespace Ward.Dns
                 CheckingDisabled = (flags & 0b0000_0000_0001_0000) != 0;
             }
 
+            [System.Diagnostics.DebuggerStepThrough]
             public override string ToString() {
                 var sb = new StringBuilder();
                 sb.Append(Query ? "" : "qr ");

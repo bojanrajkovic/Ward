@@ -33,6 +33,11 @@ namespace Ward.DnsClient.Tests
 
             Assert.NotNull(resolve);
             Assert.Single(resolve.Answers);
+            Assert.Empty(resolve.Authority);
+            Assert.Empty(resolve.Additional);
+            Assert.Single(resolve.Questions);
+            Assert.NotNull(resolve.Header);
+            Assert.True(resolve.MessageSize > 0);
 
             var a = Assert.IsType<AddressRecord>(resolve.Answers[0]);
             Assert.Equal("93.184.216.34", a.Address.ToString());
@@ -47,6 +52,11 @@ namespace Ward.DnsClient.Tests
 
             Assert.NotNull(resolve);
             Assert.Single(resolve.Answers);
+            Assert.Empty(resolve.Authority);
+            Assert.Empty(resolve.Additional);
+            Assert.Single(resolve.Questions);
+            Assert.NotNull(resolve.Header);
+            Assert.True(resolve.MessageSize > 0);
 
             var a = Assert.IsType<AddressRecord>(resolve.Answers[0]);
             Assert.Equal("93.184.216.34", a.Address.ToString());
