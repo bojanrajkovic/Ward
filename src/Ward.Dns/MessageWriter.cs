@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+
+using Ward.Dns.Records;
 using static Ward.Dns.Utils;
 
 namespace Ward.Dns
@@ -13,14 +15,12 @@ namespace Ward.Dns
         {
             // Cheat and use a memory stream.
             using (var s = new MemoryStream()) {
-                var offsetMap = new Dictionary<string, int>();
+                var offsetMap = new Dictionary<string, ushort>();
 
                 await WriteHeaderToStreamAsync(m.Header, s);
 
-                foreach (var question in m.Questions) {
-                    offsetMap.Add(question.Name, (int)s.Position);
-                    await WriteQuestionToStreamAsync(question, s);
-                }
+                foreach (var question in m.Questions)
+                    await WriteQuestionToStreamAsync(question, s, offsetMap);
 
                 var records = m.Answers.Concat(m.Authority).Concat(m.Additional);
                 foreach (var record in records)
@@ -30,31 +30,51 @@ namespace Ward.Dns
             }
         }
 
-        static async Task WriteRecordToStreamAsync(Record r, Stream s, Dictionary<string, int> offsetMap)
+        static async Task WriteRecordToStreamAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
         {
-            if (string.IsNullOrWhiteSpace(r.Name)) {
-                s.WriteByte(0);
-            } else {
-                // TODO: Fix this scheme. We need to look for subprefixes in the
-                // TODO: offset map and compact the names.
-                var nameOffset = (ushort)(0b1100_0000_0000_0000 | offsetMap[r.Name]);
+            var qname = Utils.WriteQName(r.Name, offsetMap);
+            if (!offsetMap.ContainsKey(r.Name))
+                offsetMap.Add(r.Name, (ushort)s.Position);
 
-                if (!offsetMap.ContainsKey(r.Name))
-                    offsetMap.Add(r.Name, (int)s.Position);
-
-                await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(nameOffset)), 0, 2);
-            }
-
+            await s.WriteAsync(qname, 0, qname.Length);
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)r.Type)), 0, 2);
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)r.Class)), 0, 2);
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt32(r.TimeToLive)), 0, 4);
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(r.Length)), 0, 2);
-            await s.WriteAsync(r.Data.ToArray(), 0, r.Data.Length);
+
+            var data = await GetDataForRecordAsync(r, s, offsetMap);
+            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)data.Length)), 0, 2);
+            await s.WriteAsync(data.ToArray(), 0, data.Length);
         }
 
-        static async Task WriteQuestionToStreamAsync(Question q, Stream s)
+        static async Task<byte[]> GetDataForRecordAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
         {
-            var qname = Utils.WriteQName(q.Name);
+            switch (r) {
+                case MailExchangerRecord mx:
+                    var mxQName = Utils.WriteQName(mx.Hostname, offsetMap);
+                    var preference = BitConverter.GetBytes(SwapUInt16(mx.Preference));
+                    var rData = new byte[preference.Length+mxQName.Length];
+                    Buffer.BlockCopy(preference, 0, rData, 0, preference.Length);
+
+                    // The QNAME that we just serialized is going to end up at the current
+                    // position of the stream (which is just before the data we're about to return)
+                    // plus 4 bytes: 2 for the data length, and the 2 preference bytes.
+                    if (!offsetMap.ContainsKey(mx.Hostname))
+                        offsetMap.Add(mx.Hostname, (ushort)(s.Position + 4));
+
+                    Buffer.BlockCopy(mxQName, 0, rData, preference.Length, mxQName.Length);
+                    return rData;
+                default:
+                    // If we don't know how to serialize this record, just write the data that was given.
+                    return r.Data.ToArray();
+            }
+        }
+
+        static async Task WriteQuestionToStreamAsync(Question q, Stream s, Dictionary<string, ushort> offsetMap)
+        {
+            var qname = Utils.WriteQName(q.Name, offsetMap);
+            if (!offsetMap.ContainsKey(q.Name))
+                offsetMap.Add(q.Name, (ushort)s.Position);
+
             await s.WriteAsync(qname, 0, qname.Length);
 
             var type = BitConverter.GetBytes(Utils.SwapUInt16((ushort) q.Type));

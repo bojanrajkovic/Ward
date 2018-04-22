@@ -9,7 +9,7 @@ namespace Ward.Dns.Records
         public ushort Preference { get; }
         public string Hostname { get; }
 
-        public unsafe MailExchangerRecord (
+        internal unsafe MailExchangerRecord(
             string name,
             Dns.Type type,
             Class @class,
@@ -22,6 +22,17 @@ namespace Ward.Dns.Records
             Preference = SwapUInt16(BitConverter.ToUInt16(dataArray, 0));
             var _ = 2;
             Hostname = ParseComplexName(message, dataArray, ref _);
+        }
+
+        public MailExchangerRecord(
+            string name,
+            Class @class,
+            uint timeToLive,
+            ushort preference,
+            string hostname
+        ) : base(name, Type.MX, @class, timeToLive, 0, Array.Empty<byte>()) {
+            Preference = preference;
+            Hostname = hostname;
         }
 
         [System.Diagnostics.DebuggerStepThrough]
