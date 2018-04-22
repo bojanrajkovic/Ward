@@ -65,6 +65,26 @@ namespace Ward.Dns.Tests
         }
 
         [Fact]
+        public void Can_roundtrip_name_with_offset()
+        {
+            var offsetMap = new Dictionary<string, ushort> {
+                ["aspmx.l.google.com"] = 0
+            };
+            var baseName = Utils.WriteQName("aspmx.l.google.com", null);
+            var name = "alt4.aspmx.l.google.com";
+            var qname = Utils.WriteQName(name, offsetMap);
+
+            var data = new byte[baseName.Length + qname.Length];
+            Buffer.BlockCopy(baseName, 0, data, 0, baseName.Length);
+            Buffer.BlockCopy(qname, 0, data, baseName.Length, qname.Length);
+
+            var offset = baseName.Length;
+            var parsedName = Utils.ParseComplexName(data, null, ref offset);
+
+            Assert.Equal("alt4.aspmx.l.google.com.", parsedName);
+        }
+
+        [Fact]
         public void Can_write_offset_qname()
         {
             var offsetMap = new Dictionary<string, ushort> {
