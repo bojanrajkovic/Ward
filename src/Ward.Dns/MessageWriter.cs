@@ -30,7 +30,7 @@ namespace Ward.Dns
             }
         }
 
-        static async Task WriteRecordToStreamAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
+        internal static async Task WriteRecordToStreamAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
         {
             var qname = Utils.WriteQName(r.Name, offsetMap);
             if (!offsetMap.ContainsKey(r.Name))
@@ -46,7 +46,7 @@ namespace Ward.Dns
             await s.WriteAsync(data.ToArray(), 0, data.Length);
         }
 
-        static async Task<byte[]> GetDataForRecordAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
+        internal static async Task<byte[]> GetDataForRecordAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
         {
             switch (r) {
                 case MailExchangerRecord mx:
@@ -63,6 +63,8 @@ namespace Ward.Dns
 
                     Buffer.BlockCopy(mxQName, 0, rData, preference.Length, mxQName.Length);
                     return rData;
+                case AddressRecord a:
+                    return r.Data.ToArray();
                 default:
                     // If we don't know how to serialize this record, just write the data that was given.
                     return r.Data.ToArray();
