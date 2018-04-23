@@ -37,7 +37,7 @@ namespace Ward.Dns.Tests
 
         [Theory]
         [MemberData(nameof (TestGenerators.GenerateMessageTests), MemberType = typeof(TestGenerators))]
-        public void Can_parse_whole_message(TestCase testCase)
+        public void Can_parse_whole_message(MessageManipulationTestCase testCase)
         {
             var message = MessageParser.ParseMessage(testCase.MessageData, 0);
             var expected = testCase.RawTestCase.Get<TomlTable>("expected");
