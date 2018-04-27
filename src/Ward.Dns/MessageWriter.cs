@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 using Ward.Dns.Records;
@@ -60,6 +61,17 @@ namespace Ward.Dns
                     return Utils.Concat(
                         BitConverter.GetBytes(SwapUInt16(mx.Preference)),
                         mxQName
+                    );
+                case CaaRecord caa:
+                    var critical = (byte)(caa.Critical ? 0b1000_0000 : 0);
+                    var tagAscii = Encoding.ASCII.GetBytes(caa.Tag);
+                    var tagLength = (byte)tagAscii.Length;
+                    var value = Encoding.ASCII.GetBytes(caa.Value);
+
+                    return Utils.Concat(
+                        new byte[] { critical, tagLength },
+                        tagAscii,
+                        value
                     );
                 case AddressRecord a:
                     return r.Data.ToArray();

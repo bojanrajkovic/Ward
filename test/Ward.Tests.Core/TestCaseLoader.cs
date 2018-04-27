@@ -78,6 +78,16 @@ namespace Ward.Tests.Core
                             IPAddress.Parse(tomlTestCase.Get<string>("address"))
                         );
                         break;
+                    case Dns.Type.CAA:
+                        record = new CaaRecord(
+                            tomlTestCase.Get<string>("rName"),
+                            Class.Internet,
+                            tomlTestCase.Get<uint>("timeToLive"),
+                            tomlTestCase.Get<bool>("critical"),
+                            tomlTestCase.Get<string>("tag"),
+                            tomlTestCase.Get<string>("value")
+                        );
+                        break;
                     default:
                         throw new Exception($"Don't know how to deal with record test case of type {recordType}.");
                 }

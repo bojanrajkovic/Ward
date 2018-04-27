@@ -470,3 +470,14 @@
   data = "06676f6f676c6503636f6d00001c00010000025800102607f8b0400608010000000000000200"
   [records.offsetMap]
 
+[[records]]
+  name = "caa"
+  type = "CAA"
+  rName = "coderinserepeat.com."
+  timeToLive = 600
+  critical = false
+  tag = "issue"
+  value = "letsencrypt.com"
+  data = "0f636f646572696e736572657065617403636f6d0001010001000002580016000569737375656c657473656e63727970742e636f6d"
+  [records.offsetMap]
+
