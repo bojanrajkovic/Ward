@@ -101,6 +101,13 @@ namespace Ward.Tests.Core
                     return new PtrRecord(rName, Class.Internet, timeToLive, data.Get<string>("hostname"));
                 case Dns.Type.TXT:
                     return new TxtRecord(rName, Class.Internet, timeToLive, data.Get<string>("text"));
+                case Dns.Type.SOA:
+                    return new SoaRecord(
+                        rName, Class.Internet, timeToLive,
+                        data.Get<string>("primaryNs"), data.Get<string>("responsibleName"),
+                        data.Get<uint>("serial"), data.Get<int>("refresh"),
+                        data.Get<int>("retry"), data.Get<int>("expire"), data.Get<uint>("minimumTtl")
+                    );
                 default:
                     throw new Exception($"Don't know how to deal with record test case of type {recordType}.");
             }

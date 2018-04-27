@@ -525,3 +525,18 @@
   text = "v=spf1 include:_spf.google.com ~all"
   data = "0f636f646572696e736572657065617403636f6d000010000100000258002423763d7370663120696e636c7564653a5f7370662e676f6f676c652e636f6d207e616c6c"
   [records.offsetMap]
+
+[[records]]
+  name = "soa"
+  type = "SOA"
+  rName = "coderinserepeat.com"
+  timeToLive = 600
+  primaryNs = "ns-1089.awsdns-08.org"
+  responsibleName = "awsdns-hostmaster.amazon.com"
+  serial = 1
+  refresh = 7200
+  retry = 900
+  expire = 1209600
+  minimumTtl = 86400
+  data = "0f636f646572696e736572657065617403636f6d0000060001000002580049076e732d3130383909617773646e732d3038036f72670011617773646e732d686f73746d617374657206616d617a6f6e03636f6d000000000100001c20000003840012750000015180"
+  [records.offsetMap]

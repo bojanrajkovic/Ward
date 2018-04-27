@@ -15,15 +15,14 @@ namespace Ward.Dns.Records
         public int Expire { get; }
         public uint MinimumTtl { get; }
 
-        public SoaRecord (
+        internal SoaRecord(
             string name,
-            Dns.Type type,
             Class @class,
             uint timeToLive,
             ushort length,
             ReadOnlyMemory<byte> data,
             byte[] message
-        ) : base(name, type, @class, timeToLive, length, data) {
+        ) : base(name, Dns.Type.SOA, @class, timeToLive, length, data) {
             var dataArray = data.ToArray();
             var offset = 0;
             PrimaryNameServer = Utils.ParseComplexName(message, dataArray, ref offset);
@@ -33,6 +32,27 @@ namespace Ward.Dns.Records
             Retry = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(dataArray, offset + 8));
             Expire = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(dataArray, offset + 12));
             MinimumTtl = Utils.SwapUInt32(BitConverter.ToUInt32(dataArray, offset + 16));
+        }
+
+        public SoaRecord(
+            string name,
+            Class @class,
+            uint timeToLive,
+            string primaryNameServer,
+            string responsibleName,
+            uint serial,
+            int refresh,
+            int retry,
+            int expire,
+            uint minimumTtl
+        ) : base(name, Dns.Type.SOA, @class, timeToLive, 0, Array.Empty<byte>()) {
+            PrimaryNameServer = primaryNameServer;
+            ResponsibleName = responsibleName;
+            Serial = serial;
+            Refresh = refresh;
+            Retry = retry;
+            Expire = expire;
+            MinimumTtl = minimumTtl;
         }
 
         [System.Diagnostics.DebuggerStepThrough]

@@ -33,5 +33,8 @@ namespace Ward.Dns
             Length = length;
             Data = data;
         }
+
+        public override string ToString() =>
+            $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{Length} bytes of data: {Convert.ToBase64String(Data.ToArray())}";
     }
 }

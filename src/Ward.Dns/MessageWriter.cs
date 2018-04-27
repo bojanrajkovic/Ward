@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -88,6 +89,27 @@ namespace Ward.Dns
                     if (!offsetMap.ContainsKey(ptr.Hostname))
                         offsetMap.Add(ptr.Hostname, (ushort)(s.Position + 2));
                     return ptrname;
+                case SoaRecord soa:
+                    var primaryNsName = Utils.WriteQName(soa.PrimaryNameServer, offsetMap);
+                    if (!offsetMap.ContainsKey(soa.PrimaryNameServer))
+                        offsetMap.Add(soa.PrimaryNameServer, (ushort)(s.Position + 2));
+                    var responsiblePerson = Utils.WriteQName(soa.ResponsibleName, offsetMap);
+                    if (!offsetMap.ContainsKey(soa.ResponsibleName))
+                        offsetMap.Add(soa.ResponsibleName, (ushort)(s.Position + 2 + primaryNsName.Length));
+                    var serialBytes = BitConverter.GetBytes(Utils.SwapUInt32(soa.Serial));
+                    var refreshBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(soa.Refresh));
+                    var retryBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(soa.Retry));
+                    var expireBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(soa.Expire));
+                    var minimumTtl = BitConverter.GetBytes(Utils.SwapUInt32(soa.MinimumTtl));
+                    return Utils.Concat(
+                        primaryNsName,
+                        responsiblePerson,
+                        serialBytes,
+                        refreshBytes,
+                        retryBytes,
+                        expireBytes,
+                        minimumTtl
+                    );
                 case AddressRecord a:
                 case TxtRecord t:
                 default:
