@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 
 using Ward.Dns.Records;
@@ -30,7 +32,7 @@ namespace Ward.Dns
             }
         }
 
-        static async Task WriteRecordToStreamAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
+        internal static async Task WriteRecordToStreamAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
         {
             var qname = Utils.WriteQName(r.Name, offsetMap);
             if (!offsetMap.ContainsKey(r.Name))
@@ -46,25 +48,71 @@ namespace Ward.Dns
             await s.WriteAsync(data.ToArray(), 0, data.Length);
         }
 
-        static async Task<byte[]> GetDataForRecordAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
+        internal static async Task<byte[]> GetDataForRecordAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
         {
             switch (r) {
                 case MailExchangerRecord mx:
                     var mxQName = Utils.WriteQName(mx.Hostname, offsetMap);
-                    var preference = BitConverter.GetBytes(SwapUInt16(mx.Preference));
-                    var rData = new byte[preference.Length+mxQName.Length];
-                    Buffer.BlockCopy(preference, 0, rData, 0, preference.Length);
-
                     // The QNAME that we just serialized is going to end up at the current
                     // position of the stream (which is just before the data we're about to return)
                     // plus 4 bytes: 2 for the data length, and the 2 preference bytes.
                     if (!offsetMap.ContainsKey(mx.Hostname))
                         offsetMap.Add(mx.Hostname, (ushort)(s.Position + 4));
 
-                    Buffer.BlockCopy(mxQName, 0, rData, preference.Length, mxQName.Length);
-                    return rData;
+                    return Utils.Concat(
+                        BitConverter.GetBytes(SwapUInt16(mx.Preference)),
+                        mxQName
+                    );
+                case CaaRecord caa:
+                    var critical = (byte)(caa.Critical ? 0b1000_0000 : 0);
+                    var tagAscii = Encoding.ASCII.GetBytes(caa.Tag);
+                    var tagLength = (byte)tagAscii.Length;
+                    var value = Encoding.ASCII.GetBytes(caa.Value);
+
+                    return Utils.Concat(
+                        new byte[] { critical, tagLength },
+                        tagAscii,
+                        value
+                    );
+                case CnameRecord cname:
+                    var hostname = Utils.WriteQName(cname.Hostname, offsetMap);
+                    if (!offsetMap.ContainsKey(cname.Hostname))
+                        offsetMap.Add(cname.Hostname, (ushort)(s.Position + 2));
+                    return hostname;
+                case NsRecord ns:
+                    var nsname = Utils.WriteQName(ns.Hostname, offsetMap);
+                    if (!offsetMap.ContainsKey(ns.Hostname))
+                        offsetMap.Add(ns.Hostname, (ushort)(s.Position + 2));
+                    return nsname;
+                case PtrRecord ptr:
+                    var ptrname = Utils.WriteQName(ptr.Hostname, offsetMap);
+                    if (!offsetMap.ContainsKey(ptr.Hostname))
+                        offsetMap.Add(ptr.Hostname, (ushort)(s.Position + 2));
+                    return ptrname;
+                case SoaRecord soa:
+                    var primaryNsName = Utils.WriteQName(soa.PrimaryNameServer, offsetMap);
+                    if (!offsetMap.ContainsKey(soa.PrimaryNameServer))
+                        offsetMap.Add(soa.PrimaryNameServer, (ushort)(s.Position + 2));
+                    var responsiblePerson = Utils.WriteQName(soa.ResponsibleName, offsetMap);
+                    if (!offsetMap.ContainsKey(soa.ResponsibleName))
+                        offsetMap.Add(soa.ResponsibleName, (ushort)(s.Position + 2 + primaryNsName.Length));
+                    var serialBytes = BitConverter.GetBytes(Utils.SwapUInt32(soa.Serial));
+                    var refreshBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(soa.Refresh));
+                    var retryBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(soa.Retry));
+                    var expireBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(soa.Expire));
+                    var minimumTtl = BitConverter.GetBytes(Utils.SwapUInt32(soa.MinimumTtl));
+                    return Utils.Concat(
+                        primaryNsName,
+                        responsiblePerson,
+                        serialBytes,
+                        refreshBytes,
+                        retryBytes,
+                        expireBytes,
+                        minimumTtl
+                    );
+                case AddressRecord a:
+                case TxtRecord t:
                 default:
-                    // If we don't know how to serialize this record, just write the data that was given.
                     return r.Data.ToArray();
             }
         }

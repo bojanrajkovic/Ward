@@ -18,7 +18,7 @@ namespace Ward.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
-            var message = TestCaseLoader.LoadTestCase("example.com-a-response-from-8.8.8.8");
+            var message = TestCaseLoader.LoadMessageTestCase("example.com-a-response-from-8.8.8.8");
             messageData = message.MessageData;
         }
 

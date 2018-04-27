@@ -1,6 +1,6 @@
 namespace Ward.Dns
 {
-    public enum Class
+    public enum Class : ushort
     {
         Internet = 1,
         Chaos = 3,
