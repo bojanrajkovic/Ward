@@ -34,6 +34,7 @@ namespace Ward.Dns
             Data = data;
         }
 
+        [System.Diagnostics.DebuggerStepThrough]
         public override string ToString() =>
             $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{Length} bytes of data: {Convert.ToBase64String(Data.ToArray())}";
     }

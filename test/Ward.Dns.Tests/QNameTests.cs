@@ -65,6 +65,10 @@ namespace Ward.Dns.Tests
         }
 
         [Fact]
+        public void Null_or_empty_name_write_single_zero_byte() =>
+            Assert.Equal(new byte[] { 0 }, Utils.WriteQName(null, null));
+
+        [Fact]
         public void Can_roundtrip_name_with_offset()
         {
             var offsetMap = new Dictionary<string, ushort> {
