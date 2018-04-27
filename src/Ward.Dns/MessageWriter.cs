@@ -51,18 +51,16 @@ namespace Ward.Dns
             switch (r) {
                 case MailExchangerRecord mx:
                     var mxQName = Utils.WriteQName(mx.Hostname, offsetMap);
-                    var preference = BitConverter.GetBytes(SwapUInt16(mx.Preference));
-                    var rData = new byte[preference.Length+mxQName.Length];
-                    Buffer.BlockCopy(preference, 0, rData, 0, preference.Length);
-
                     // The QNAME that we just serialized is going to end up at the current
                     // position of the stream (which is just before the data we're about to return)
                     // plus 4 bytes: 2 for the data length, and the 2 preference bytes.
                     if (!offsetMap.ContainsKey(mx.Hostname))
                         offsetMap.Add(mx.Hostname, (ushort)(s.Position + 4));
 
-                    Buffer.BlockCopy(mxQName, 0, rData, preference.Length, mxQName.Length);
-                    return rData;
+                    return Utils.Concat(
+                        BitConverter.GetBytes(SwapUInt16(mx.Preference)),
+                        mxQName
+                    );
                 case AddressRecord a:
                     return r.Data.ToArray();
                 default:
