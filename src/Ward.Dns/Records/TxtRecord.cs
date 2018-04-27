@@ -9,16 +9,34 @@ namespace Ward.Dns.Records
     {
         public string TextData { get; }
 
-        public unsafe TxtRecord (
+        internal unsafe TxtRecord(
             string name,
-            Dns.Type type,
             Class @class,
             uint timeToLive,
             ushort length,
             ReadOnlyMemory<byte> data
-        ) : base(name, type, @class, timeToLive, length, data) {
+        ) : base(name, Dns.Type.TXT, @class, timeToLive, length, data) {
             using (var pin = data.Pin())
                 TextData = Encoding.ASCII.GetString((byte*)pin.Pointer + 1, *((byte*)pin.Pointer));
+        }
+
+        public TxtRecord(
+            string name,
+            Class @class,
+            uint timeToLive,
+            string textData
+        ) : base(
+            name,
+            Dns.Type.TXT,
+            @class,
+            timeToLive,
+            (ushort)(1+Encoding.ASCII.GetByteCount(textData)),
+            Utils.Concat(
+                new [] { (byte)Encoding.ASCII.GetByteCount(textData) },
+                Encoding.ASCII.GetBytes(textData)
+            )
+        ) {
+            TextData = textData;
         }
 
         [System.Diagnostics.DebuggerStepThrough]

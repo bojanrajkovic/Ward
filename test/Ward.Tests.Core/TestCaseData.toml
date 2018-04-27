@@ -516,3 +516,12 @@
   data = "013401340138013807696e2d61646472046172706100000c000100000258002013676f6f676c652d7075626c69632d646e732d6206676f6f676c6503636f6d00"
   hostname = "google-public-dns-b.google.com"
   [records.offsetMap]
+
+[[records]]
+  name = "txt"
+  type = "TXT"
+  rName = "coderinserepeat.com"
+  timeToLive = 600
+  text = "v=spf1 include:_spf.google.com ~all"
+  data = "0f636f646572696e736572657065617403636f6d000010000100000258002423763d7370663120696e636c7564653a5f7370662e676f6f676c652e636f6d207e616c6c"
+  [records.offsetMap]

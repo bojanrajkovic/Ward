@@ -99,6 +99,8 @@ namespace Ward.Tests.Core
                     return new NsRecord(rName, Class.Internet, timeToLive, data.Get<string>("hostname"));
                 case Dns.Type.PTR:
                     return new PtrRecord(rName, Class.Internet, timeToLive, data.Get<string>("hostname"));
+                case Dns.Type.TXT:
+                    return new TxtRecord(rName, Class.Internet, timeToLive, data.Get<string>("text"));
                 default:
                     throw new Exception($"Don't know how to deal with record test case of type {recordType}.");
             }

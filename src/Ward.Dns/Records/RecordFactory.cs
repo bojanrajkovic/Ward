@@ -30,7 +30,7 @@ namespace Ward.Dns.Records
                 case Type.PTR:
                     return new PtrRecord(name, @class, ttl, length, data, message);
                 case Type.TXT:
-                    return new TxtRecord(name, type, @class, ttl, length, data);
+                    return new TxtRecord(name, @class, ttl, length, data);
                 default:
                     return new Record(name, type, @class, ttl, length, data);
             }

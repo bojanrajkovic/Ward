@@ -89,9 +89,8 @@ namespace Ward.Dns
                         offsetMap.Add(ptr.Hostname, (ushort)(s.Position + 2));
                     return ptrname;
                 case AddressRecord a:
-                    return r.Data.ToArray();
+                case TxtRecord t:
                 default:
-                    // If we don't know how to serialize this record, just write the data that was given.
                     return r.Data.ToArray();
             }
         }
