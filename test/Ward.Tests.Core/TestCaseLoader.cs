@@ -88,6 +88,14 @@ namespace Ward.Tests.Core
                             tomlTestCase.Get<string>("value")
                         );
                         break;
+                    case Dns.Type.CNAME:
+                        record = new CnameRecord(
+                            tomlTestCase.Get<string>("rName"),
+                            Class.Internet,
+                            tomlTestCase.Get<uint>("timeToLive"),
+                            tomlTestCase.Get<string>("hostname")
+                        );
+                        break;
                     default:
                         throw new Exception($"Don't know how to deal with record test case of type {recordType}.");
                 }

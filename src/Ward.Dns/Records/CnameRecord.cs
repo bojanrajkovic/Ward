@@ -8,17 +8,25 @@ namespace Ward.Dns.Records
     {
         public string Hostname { get; }
 
-        public CnameRecord (
+        internal CnameRecord(
             string name,
-            Dns.Type type,
             Class @class,
             uint timeToLive,
             ushort length,
             ReadOnlyMemory<byte> data,
             byte[] message
-        ) : base(name, type, @class, timeToLive, length, data) {
+        ) : base(name, Dns.Type.CNAME, @class, timeToLive, length, data) {
             var _ = 0;
             Hostname = ParseComplexName(message, data.ToArray(), ref _);
+        }
+
+        public CnameRecord(
+            string name,
+            Class @class,
+            uint timeToLive,
+            string cname
+        ) : base(name, Dns.Type.CNAME, @class, timeToLive, 0, Array.Empty<byte>()) {
+            Hostname = cname;
         }
 
         [System.Diagnostics.DebuggerStepThrough]

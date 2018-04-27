@@ -1,7 +1,6 @@
 nuget install -OutputDirectory packages -Version 4.6.519 OpenCover
 nuget install -OutputDirectory packages -Version 3.1.2 ReportGenerator
 
-
 $dotnetPath=(Join-Path $env:ProgramFiles (Join-Path dotnet dotnet.exe))
 
 & $dotnetPath build /p:RunCoverage=True -c:Debug

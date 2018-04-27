@@ -22,7 +22,7 @@ namespace Ward.Dns.Records
                 case Type.CAA:
                     return new CaaRecord(name, @class, ttl, length, data);
                 case Type.CNAME:
-                    return new CnameRecord(name, type, @class, ttl, length, data, message);
+                    return new CnameRecord(name, @class, ttl, length, data, message);
                 case Type.NS:
                     return new NsRecord(name, type, @class, ttl, length, data, message);
                 case Type.SOA:

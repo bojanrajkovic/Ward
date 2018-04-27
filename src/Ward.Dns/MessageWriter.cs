@@ -73,6 +73,11 @@ namespace Ward.Dns
                         tagAscii,
                         value
                     );
+                case CnameRecord cname:
+                    var hostname = Utils.WriteQName(cname.Hostname, offsetMap);
+                    if (!offsetMap.ContainsKey(cname.Hostname))
+                        offsetMap.Add(cname.Hostname, (ushort)(s.Position + 2));
+                    return hostname;
                 case AddressRecord a:
                     return r.Data.ToArray();
                 default:
