@@ -97,6 +97,8 @@ namespace Ward.Tests.Core
                     return new MailExchangerRecord(rName, Class.Internet, timeToLive, 5, data.Get<string>("hostname"));
                 case Dns.Type.NS:
                     return new NsRecord(rName, Class.Internet, timeToLive, data.Get<string>("hostname"));
+                case Dns.Type.PTR:
+                    return new PtrRecord(rName, Class.Internet, timeToLive, data.Get<string>("hostname"));
                 default:
                     throw new Exception($"Don't know how to deal with record test case of type {recordType}.");
             }

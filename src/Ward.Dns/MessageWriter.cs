@@ -83,6 +83,11 @@ namespace Ward.Dns
                     if (!offsetMap.ContainsKey(ns.Hostname))
                         offsetMap.Add(ns.Hostname, (ushort)(s.Position + 2));
                     return nsname;
+                case PtrRecord ptr:
+                    var ptrname = Utils.WriteQName(ptr.Hostname, offsetMap);
+                    if (!offsetMap.ContainsKey(ptr.Hostname))
+                        offsetMap.Add(ptr.Hostname, (ushort)(s.Position + 2));
+                    return ptrname;
                 case AddressRecord a:
                     return r.Data.ToArray();
                 default:

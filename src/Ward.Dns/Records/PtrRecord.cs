@@ -8,17 +8,25 @@ namespace Ward.Dns.Records
     {
         public string Hostname { get; }
 
-        public PtrRecord (
+        internal PtrRecord(
             string name,
-            Dns.Type type,
             Class @class,
             uint timeToLive,
             ushort length,
             ReadOnlyMemory<byte> data,
             byte[] message
-        ) : base(name, type, @class, timeToLive, length, data) {
+        ) : base(name, Dns.Type.PTR, @class, timeToLive, length, data) {
             var _ = 0;
             Hostname = ParseComplexName(message, data.ToArray(), ref _);
+        }
+
+        public PtrRecord(
+            string name,
+            Class @class,
+            uint timeToLive,
+            string hostname
+        ) : base(name, Dns.Type.PTR, @class, timeToLive, 0, Array.Empty<byte>()) {
+            Hostname = hostname;
         }
 
         [System.Diagnostics.DebuggerStepThrough]
