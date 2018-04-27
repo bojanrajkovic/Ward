@@ -24,7 +24,7 @@ namespace Ward.Dns.Records
                 case Type.CNAME:
                     return new CnameRecord(name, @class, ttl, length, data, message);
                 case Type.NS:
-                    return new NsRecord(name, type, @class, ttl, length, data, message);
+                    return new NsRecord(name, @class, ttl, length, data, message);
                 case Type.SOA:
                     return new SoaRecord(name, type, @class, ttl, length, data, message);
                 case Type.PTR:

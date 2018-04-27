@@ -498,3 +498,12 @@
   hostname = "aspmx.l.google.com"
   data = "06676f6f676c6503636f6d00000f000100000258000c0005056173706d78016cc000"
   [records.offsetMap]
+
+[[records]]
+  name = "ns"
+  type = "NS"
+  rName = "google.com"
+  timeToLive = 600
+  hostname = "ns1.google.com"
+  data = "06676f6f676c6503636f6d0000020001000002580006036e7331c000"
+  [records.offsetMap]

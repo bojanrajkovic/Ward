@@ -53,63 +53,23 @@ namespace Ward.Tests.Core
         static void PopulateRecordSerializationTests()
         {
             var testCases = testCaseData.Get<TomlTableArray>("records");
-            foreach (var tomlTestCase in testCases.Items) {
+            foreach (var tomlTestCase in testCases.Items)
+            {
                 var name = tomlTestCase.Get<string>("name");
                 var dataString = tomlTestCase.Get<string>("data");
                 // Convert hex to bytes.
-                var expectedData = Enumerable.Range(0, dataString.Length/2)
-                                             .Select(x => Byte.Parse(dataString.Substring(2*x, 2), NumberStyles.HexNumber))
-                                             .ToArray();;
+                var expectedData = Enumerable.Range(0, dataString.Length / 2)
+                                             .Select(x => Byte.Parse(dataString.Substring(2 * x, 2), NumberStyles.HexNumber))
+                                             .ToArray(); ;
                 var offsetMap = tomlTestCase.Get<TomlTable>("offsetMap").ToDictionary(
                     kvp => kvp.Key,
                     kvp => kvp.Value.Get<ushort>()
                 );
 
-                Record record;
                 var recordType = tomlTestCase.Get<Dns.Type>("type");
                 string rName = tomlTestCase.Get<string>("rName");
                 uint timeToLive = tomlTestCase.Get<uint>("timeToLive");
-                switch (recordType) {
-                    case Dns.Type.A:
-                    case Dns.Type.AAAA:
-                        record = new AddressRecord(
-                            rName,
-                            recordType,
-                            Class.Internet, // Maybe someday I will care about any other class.
-                            timeToLive,
-                            IPAddress.Parse(tomlTestCase.Get<string>("address"))
-                        );
-                        break;
-                    case Dns.Type.CAA:
-                        record = new CaaRecord(
-                            rName,
-                            Class.Internet,
-                            timeToLive,
-                            tomlTestCase.Get<bool>("critical"),
-                            tomlTestCase.Get<string>("tag"),
-                            tomlTestCase.Get<string>("value")
-                        );
-                        break;
-                    case Dns.Type.CNAME:
-                        record = new CnameRecord(
-                            rName,
-                            Class.Internet,
-                            timeToLive,
-                            tomlTestCase.Get<string>("hostname")
-                        );
-                        break;
-                    case Dns.Type.MX:
-                        record = new MailExchangerRecord(
-                            rName,
-                            Class.Internet,
-                            timeToLive,
-                            5,
-                            tomlTestCase.Get<string>("hostname")
-                        );
-                        break;
-                    default:
-                        throw new Exception($"Don't know how to deal with record test case of type {recordType}.");
-                }
+                var record = GetRecord(tomlTestCase, recordType, rName, timeToLive);
 
                 recordTestCases.Add(
                     name,
@@ -120,6 +80,25 @@ namespace Ward.Tests.Core
                         offsetMap
                     )
                 );
+            }
+        }
+
+        private static Record GetRecord(TomlTable data, Dns.Type recordType, string rName, uint timeToLive)
+        {
+            switch (recordType) {
+                case Dns.Type.A:
+                case Dns.Type.AAAA:
+                    return new AddressRecord(rName, recordType, Class.Internet, timeToLive, IPAddress.Parse(data.Get<string>("address")));
+                case Dns.Type.CAA:
+                    return new CaaRecord(rName, Class.Internet, timeToLive, data.Get<bool>("critical"), data.Get<string>("tag"), data.Get<string>("value"));
+                case Dns.Type.CNAME:
+                    return new CnameRecord(rName, Class.Internet, timeToLive, data.Get<string>("hostname"));
+                case Dns.Type.MX:
+                    return new MailExchangerRecord(rName, Class.Internet, timeToLive, 5, data.Get<string>("hostname"));
+                case Dns.Type.NS:
+                    return new NsRecord(rName, Class.Internet, timeToLive, data.Get<string>("hostname"));
+                default:
+                    throw new Exception($"Don't know how to deal with record test case of type {recordType}.");
             }
         }
 

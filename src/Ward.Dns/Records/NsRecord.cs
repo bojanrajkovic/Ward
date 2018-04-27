@@ -8,17 +8,25 @@ namespace Ward.Dns.Records
     {
         public string Hostname { get; }
 
-        public NsRecord (
+        internal NsRecord(
             string name,
-            Dns.Type type,
             Class @class,
             uint timeToLive,
             ushort length,
             ReadOnlyMemory<byte> data,
             byte[] message
-        ) : base(name, type, @class, timeToLive, length, data) {
+        ) : base(name, Dns.Type.NS, @class, timeToLive, length, data) {
             var _ = 0;
             Hostname = ParseComplexName(message, data.ToArray(), ref _);
+        }
+
+        public NsRecord(
+            string name,
+            Class @class,
+            uint timeToLive,
+            string hostname
+        ) : base(name, Dns.Type.NS, @class, timeToLive, 0, Array.Empty<byte>()) {
+            Hostname = hostname;
         }
 
         [System.Diagnostics.DebuggerStepThrough]
