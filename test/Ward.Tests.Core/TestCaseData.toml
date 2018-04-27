@@ -489,3 +489,12 @@
   hostname = "azure.microsoft.com.nsatc.net"
   data = "05617a757265096d6963726f736f667403636f6d000005000100000258001f05617a757265096d6963726f736f667403636f6d056e73617463036e657400"
   [records.offsetMap]
+
+[[records]]
+  name = "mx"
+  type = "MX"
+  rName = "google.com"
+  timeToLive = 600
+  hostname = "aspmx.l.google.com"
+  data = "06676f6f676c6503636f6d00000f000100000258000c0005056173706d78016cc000"
+  [records.offsetMap]

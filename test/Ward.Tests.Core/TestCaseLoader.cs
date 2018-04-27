@@ -67,22 +67,24 @@ namespace Ward.Tests.Core
 
                 Record record;
                 var recordType = tomlTestCase.Get<Dns.Type>("type");
+                string rName = tomlTestCase.Get<string>("rName");
+                uint timeToLive = tomlTestCase.Get<uint>("timeToLive");
                 switch (recordType) {
                     case Dns.Type.A:
                     case Dns.Type.AAAA:
                         record = new AddressRecord(
-                            tomlTestCase.Get<string>("rName"),
+                            rName,
                             recordType,
                             Class.Internet, // Maybe someday I will care about any other class.
-                            tomlTestCase.Get<uint>("timeToLive"),
+                            timeToLive,
                             IPAddress.Parse(tomlTestCase.Get<string>("address"))
                         );
                         break;
                     case Dns.Type.CAA:
                         record = new CaaRecord(
-                            tomlTestCase.Get<string>("rName"),
+                            rName,
                             Class.Internet,
-                            tomlTestCase.Get<uint>("timeToLive"),
+                            timeToLive,
                             tomlTestCase.Get<bool>("critical"),
                             tomlTestCase.Get<string>("tag"),
                             tomlTestCase.Get<string>("value")
@@ -90,9 +92,18 @@ namespace Ward.Tests.Core
                         break;
                     case Dns.Type.CNAME:
                         record = new CnameRecord(
-                            tomlTestCase.Get<string>("rName"),
+                            rName,
                             Class.Internet,
-                            tomlTestCase.Get<uint>("timeToLive"),
+                            timeToLive,
+                            tomlTestCase.Get<string>("hostname")
+                        );
+                        break;
+                    case Dns.Type.MX:
+                        record = new MailExchangerRecord(
+                            rName,
+                            Class.Internet,
+                            timeToLive,
+                            5,
                             tomlTestCase.Get<string>("hostname")
                         );
                         break;
