@@ -29,7 +29,6 @@ namespace Ward.Dns
             var adCount = SwapUInt16(BitConverter.ToUInt16(bytes, pos + 6));
             pos += 8;
 
-            var header = new Header(id, opcode, returnCode, flags, qCount, anCount, auCount, adCount);
             var questions = new Question[qCount];
             Record[] answers = new Record[anCount],
                      authorities = new Record[auCount],
@@ -51,8 +50,23 @@ namespace Ward.Dns
             for (var a = 0; a < auCount; a++)
                 authorities[a] = ParseRecord(bytes, ref pos);
 
-            for (var a = 0; a < adCount; a++)
-                additionals[a] = ParseRecord(bytes, ref pos);
+            bool haveSeenOptRecord = false;
+            for (var a = 0; a < adCount; a++) {
+                var newRecord = ParseRecord(bytes, ref pos);
+                additionals[a] = newRecord;
+
+                // Validate, and update RCODE if OPT contains extended RCODE bits.
+                if (newRecord is OptRecord opt) {
+                    if (haveSeenOptRecord)
+                        throw new InvalidOperationException("Invalid DNS message, contains multiple OPT pseudo-RRs!");
+                    haveSeenOptRecord = true;
+                    if (opt.ExtendedRcode != 0)
+                        returnCode = (ReturnCode)(opt.ExtendedRcode << 4 | (ushort)returnCode);
+                }
+
+            }
+
+            var header = new Header(id, opcode, returnCode, flags, qCount, anCount, auCount, adCount);
 
             return new Message(header, questions, answers, authorities, additionals);
         }
