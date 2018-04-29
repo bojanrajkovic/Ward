@@ -30,14 +30,19 @@ namespace Ward.DnsClient
                     1,
                     0,
                     0,
-                    1
+                    0
                 ),
                 new [] { question },
                 Array.Empty<Record>(),
                 Array.Empty<Record>(),
-                new [] { new OptRecord(4096, 0, 0, false, Array.Empty<(OptRecord.OptionCode, ReadOnlyMemory<byte>)>()) }
+                Array.Empty<Record>()
             );
-            var messageData = await MessageWriter.SerializeMessageAsync(message);
+            var messageData = await MessageWriter.SerializeMessageAsync(
+                message,
+                writeOpt: true,
+                udpPayloadSize: 4096
+            );
+            await client.SendAsync(messageData, messageData.Length);
 
             cancellationToken.ThrowIfCancellationRequested();
 

@@ -62,27 +62,6 @@ namespace Ward.Dns.Records
             OptionalData = optionalData.AsReadOnly();
         }
 
-        internal OptRecord(
-            ushort payloadSize,
-            byte extendedRcode,
-            byte edns0Version,
-            bool dnsSecOk,
-            IEnumerable<(OptionCode optionCode, ReadOnlyMemory<byte> optionData)> data
-        ) : base(
-            null,
-            Dns.Type.OPT,
-            (Class)payloadSize,
-            (uint)(extendedRcode << 24 | edns0Version << 16 | (dnsSecOk ? 1 << 15 : 0)),
-            0,
-            Array.Empty<byte>()
-        ) {
-            UdpPayloadSize = payloadSize;
-            ExtendedRcode = extendedRcode;
-            Edns0Version = edns0Version;
-            DnsSecOk = dnsSecOk;
-            OptionalData = data.ToList().AsReadOnly();
-        }
-
         [System.Diagnostics.DebuggerStepThrough]
         public override string ToString() => $"";
     }

@@ -9,41 +9,59 @@ using System.Threading.Tasks;
 using Ward.Dns.Records;
 using static Ward.Dns.Utils;
 
+using OptData = System.Collections.Generic.IEnumerable<(
+    Ward.Dns.Records.OptRecord.OptionCode optionCode,
+    System.ReadOnlyMemory<byte> optionData
+)>;
+
 namespace Ward.Dns
 {
     public class MessageWriter
     {
-        public static async Task<byte[]> SerializeMessageAsync(Message m)
+        const int edns0Version = 0;
+        const bool dnsSecOk = false;
+
+        public static async Task<byte[]> SerializeMessageAsync(
+            Message m,
+            bool writeOpt = false,
+            ushort udpPayloadSize = 4096,
+            OptData optData = null)
         {
+            writeOpt = writeOpt || (ushort)m.Header.ReturnCode > 15;
+
             // Cheat and use a memory stream.
             using (var s = new MemoryStream()) {
                 var offsetMap = new Dictionary<string, ushort>();
-
-                await WriteHeaderToStreamAsync(m.Header, s);
+                await WriteHeaderToStreamAsync(m.Header, writeOpt, s);
 
                 foreach (var question in m.Questions)
                     await WriteQuestionToStreamAsync(question, s, offsetMap);
 
                 var records = m.Answers.Concat(m.Authority).Concat(m.Additional);
-                foreach (var record in records) {
-                    if (record is OptRecord opt)
-                        await WriteOptRecordToStreamAsync(opt, m.Header, s);
-                    else
-                        await WriteRecordToStreamAsync(record, s, offsetMap);
-                }
+                foreach (var record in records)
+                    await WriteRecordToStreamAsync(record, s, offsetMap);
+
+                // If we've been asked to write an opt record, or if we *need* to write an
+                // opt record because the header RCODE is > 15, write an OPT.
+                if (writeOpt)
+                    await WriteOptRecordToStreamAsync(udpPayloadSize, optData, m.Header, s);
 
                 return s.ToArray();
             }
         }
 
-        internal static async Task WriteOptRecordToStreamAsync(OptRecord opt, Header header, Stream s)
-        {
+        internal static async Task WriteOptRecordToStreamAsync(
+            ushort udpPayloadSize,
+            OptData optData,
+            Header header,
+            Stream s
+        ) {
             // OPT pseudo-RR's always have a null name.
             await s.WriteAsync(new byte[] { 0 }, 0, 1);
 
             // Write the OPT type, and the UDP payload size as the class.
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)Type.OPT)), 0, 2);
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)opt.UdpPayloadSize)), 0, 2);
+            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)udpPayloadSize)), 0, 2);
 
             // Compute the extended RCODE, which is the high 8 bits of the return code.
             // We can safely ignore the one in the OPT record for now, because the only way to create
@@ -51,15 +69,28 @@ namespace Ward.Dns
             byte extendedRcode = (byte)((ushort)header.ReturnCode >> 4);
 
             s.WriteByte(extendedRcode);
-            s.WriteByte(opt.Edns0Version);
+            s.WriteByte(edns0Version);
 
-            var remainingFlags = (opt.DnsSecOk ? (ushort)(1 << 15) : (ushort)0);
+            var remainingFlags = (dnsSecOk ? (ushort)(1 << 15) : (ushort)0);
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(remainingFlags)), 0, 2);
 
+            byte[] rdata;
+            if (optData == null || optData.Count() == 0)
+                rdata = Array.Empty<byte>();
+            else {
+                var arrayOfArrays = new byte[optData.Count()*3][];
+                int pos = 0;
+                foreach (var data in optData) {
+                    arrayOfArrays[pos++] = BitConverter.GetBytes(SwapUInt16((ushort)data.optionCode));
+                    arrayOfArrays[pos++] = BitConverter.GetBytes(SwapUInt16((ushort)data.optionData.Length));
+                    arrayOfArrays[pos++] = data.optionData.ToArray();
+                };
+                rdata = Utils.Concat(arrayOfArrays);
+            }
+
             // Now we've written type, class, and "TTL", we can write the data as normal.
-            var data = await GetDataForRecordAsync(opt, s, null);
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)data.Length)), 0, 2);
-            await s.WriteAsync(data.ToArray(), 0, data.Length);
+            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)rdata.Length)), 0, 2);
+            await s.WriteAsync(rdata, 0, rdata.Length);
         }
 
         internal static async Task WriteRecordToStreamAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
@@ -140,19 +171,6 @@ namespace Ward.Dns
                         expireBytes,
                         minimumTtl
                     );
-                case OptRecord opt:
-                    if (opt.OptionalData.Count == 0)
-                        return Array.Empty<byte>();
-                    else {
-                        var arrayOfArrays = new byte[opt.OptionalData.Count*3][];
-                        int pos = 0;
-                        foreach (var data in opt.OptionalData) {
-                            arrayOfArrays[pos++] = BitConverter.GetBytes(SwapUInt16((ushort)data.optionCode));
-                            arrayOfArrays[pos++] = BitConverter.GetBytes(SwapUInt16((ushort)data.optionData.Length));
-                            arrayOfArrays[pos++] = data.optionData.ToArray();
-                        };
-                        return Utils.Concat(arrayOfArrays);
-                    }
                 case AddressRecord a:
                 case TxtRecord t:
                 default:
@@ -175,7 +193,7 @@ namespace Ward.Dns
             await s.WriteAsync(@class, 0, 2);
         }
 
-        static async Task WriteHeaderToStreamAsync(Header h, Stream s)
+        static async Task WriteHeaderToStreamAsync(Header h, bool writeOpt, Stream s)
         {
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(h.Id)), 0, 2);
 
@@ -193,10 +211,11 @@ namespace Ward.Dns
             flags |= (byte)((ushort)h.ReturnCode & 0b0000_0000_0000_1111);
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(flags)), 0, 2);
 
+            var optBonus = writeOpt ? 1 : 0;
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(h.TotalQuestions)), 0, 2);
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(h.TotalAnswerRecords)), 0, 2);
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(h.TotalAuthorityRecords)), 0, 2);
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(h.TotalAdditionalRecords)), 0, 2);
+            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)(h.TotalAdditionalRecords+optBonus))), 0, 2);
         }
     }
 }
