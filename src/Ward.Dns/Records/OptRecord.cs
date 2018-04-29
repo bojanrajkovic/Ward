@@ -42,7 +42,7 @@ namespace Ward.Dns.Records
             UdpPayloadSize = payloadSize;
             ExtendedRcode = (byte)(rcodeAndFlags >> 24);
             Edns0Version = (byte)(rcodeAndFlags >> 16);
-            DnsSecOk = (((short)rcodeAndFlags) & 0b1000_0000_0000_0000) == 1;
+            DnsSecOk = (((ushort)rcodeAndFlags) >> 15) == 1;
 
             var optionalData = new List<(OptionCode optionCode, ReadOnlyMemory<byte> optionData)>();
             using (var pin = data.Pin()) {
@@ -64,12 +64,18 @@ namespace Ward.Dns.Records
 
         public OptRecord(
             ushort payloadSize,
-            uint rcodeAndFlags,
             byte extendedRcode,
             byte edns0Version,
             bool dnsSecOk,
             IEnumerable<(OptionCode optionCode, ReadOnlyMemory<byte> optionData)> data
-        ) : base(null, Dns.Type.OPT, (Class)payloadSize, rcodeAndFlags, 0, Array.Empty<byte>()) {
+        ) : base(
+            null,
+            Dns.Type.OPT,
+            (Class)payloadSize,
+            (uint)(extendedRcode << 24 | edns0Version << 16 | (dnsSecOk ? 1 << 15 : 0)),
+            0,
+            Array.Empty<byte>()
+        ) {
             UdpPayloadSize = payloadSize;
             ExtendedRcode = extendedRcode;
             Edns0Version = edns0Version;
