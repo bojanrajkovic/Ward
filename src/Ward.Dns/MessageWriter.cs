@@ -114,14 +114,14 @@ namespace Ward.Dns
                     if (opt.OptionalData.Count == 0)
                         return Array.Empty<byte>();
                     else {
-                        using (var optStream = new MemoryStream()) {
-                            foreach (var data in opt.OptionalData) {
-                                await optStream.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)data.optionCode)), 0, 2);
-                                await optStream.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)data.optionData.Length)), 0, 2);
-                                await optStream.WriteAsync(data.optionData.ToArray(), 0, data.optionData.Length);
-                            }
-                            return optStream.ToArray();
-                        }
+                        var arrayOfArrays = new byte[opt.OptionalData.Count*3][];
+                        int pos = 0;
+                        foreach (var data in opt.OptionalData) {
+                            arrayOfArrays[pos++] = BitConverter.GetBytes(SwapUInt16((ushort)data.optionCode));
+                            arrayOfArrays[pos++] = BitConverter.GetBytes(SwapUInt16((ushort)data.optionData.Length));
+                            arrayOfArrays[pos++] = data.optionData.ToArray();
+                        };
+                        return Utils.Concat(arrayOfArrays);
                     }
                 case AddressRecord a:
                 case TxtRecord t:
