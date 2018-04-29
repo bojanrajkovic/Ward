@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Runtime.ExceptionServices;
 using System.Security;
 using System.Security.Authentication;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Ward.Dns;
@@ -18,12 +19,14 @@ namespace Ward.DnsClient
     {
         static readonly ArrayPool<byte> BufferPool = ArrayPool<byte>.Shared;
 
+        readonly SemaphoreSlim semaphore = new SemaphoreSlim(1);
         readonly IPAddress address;
         readonly ushort port;
         readonly string tlsHost;
         readonly string expectedSpkiPin;
         readonly bool tls;
         readonly TcpClient tcpClient;
+        Stream stream;
 
         public TimeSpan ConnectTimeout { get; }
 
@@ -39,12 +42,19 @@ namespace Ward.DnsClient
             ConnectTimeout = TimeSpan.FromMilliseconds(connectTimeout);
         }
 
-        async Task<Stream> ConnectAsync()
+        async Task<Stream> ConnectAsync(CancellationToken cancellationToken)
         {
+            if (tcpClient.Connected)
+                return stream;
+
             var connectTask = tcpClient.ConnectAsync(address, port);
             var timeout = Task.Delay(ConnectTimeout);
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             var first = await Task.WhenAny(connectTask, timeout);
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (first == timeout)
                 throw new TimeoutException($"Timeout connecting to {address}:{port}");
@@ -55,16 +65,24 @@ namespace Ward.DnsClient
             if (!tcpClient.Connected)
                 throw new Exception($"Failed to connect to {address}:{port}");
 
-            var stream = tcpClient.GetStream();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            stream = tcpClient.GetStream();
 
             if (!tls)
                 return stream;
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             var sslStream = new SslStream(stream, false);
             await sslStream.AuthenticateAsClientAsync(tlsHost, null, SslProtocols.Tls12, true);
 
+            stream = sslStream;
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (string.IsNullOrWhiteSpace(expectedSpkiPin))
-                return sslStream;
+                return stream;
 
             var remoteCert = sslStream.RemoteCertificate;
             var spkiPinHash = remoteCert.GetSpkiPinHash();
@@ -72,13 +90,11 @@ namespace Ward.DnsClient
             if (spkiPinHash != expectedSpkiPin)
                 throw new SecurityException($"SPKI hash {spkiPinHash} did not match expected SPKI hash {expectedSpkiPin}");
 
-            return sslStream;
+            return stream;
         }
 
-        public async Task<IResolveResult> ResolveAsync(Question question)
+        public async Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default)
         {
-            var stream = await ConnectAsync();
-
             var message = new Message(
                 new Header(
                     null,
@@ -99,14 +115,23 @@ namespace Ward.DnsClient
             var messageData = await MessageWriter.SerializeMessageAsync(message);
             var messageLengthOctet = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)messageData.Length));
 
-            await stream.WriteAsync(messageLengthOctet, 0, messageLengthOctet.Length);
-            await stream.WriteAsync(messageData, 0, messageData.Length);
+            byte[] responseLengthBuf, responseBuf;
+            try {
+                await semaphore.WaitAsync(cancellationToken);
 
-            var responseLengthBuf = BufferPool.Rent(2);
-            await stream.ReadAsync(responseLengthBuf, 0, 2);
-            var responseLength = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(responseLengthBuf, 0));
-            var responseBuf = BufferPool.Rent(responseLength);
-            await stream.ReadAsync(responseBuf, 0, responseLength);
+                var stream = await ConnectAsync(cancellationToken);
+
+                await stream.WriteAsync(messageLengthOctet, 0, messageLengthOctet.Length, cancellationToken);
+                await stream.WriteAsync(messageData, 0, messageData.Length, cancellationToken);
+
+                responseLengthBuf = BufferPool.Rent(2);
+                await stream.ReadAsync(responseLengthBuf, 0, 2, cancellationToken);
+                var responseLength = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(responseLengthBuf, 0));
+                responseBuf = BufferPool.Rent(responseLength);
+                await stream.ReadAsync(responseBuf, 0, responseLength, cancellationToken);
+            } finally {
+                semaphore.Release();
+            }
 
             var response = MessageParser.ParseMessage(responseBuf, 0);
             var result = new ResolveResult(response, responseBuf.Length);
@@ -117,7 +142,7 @@ namespace Ward.DnsClient
             return result;
         }
 
-        public Task<IResolveResult> ResolveAsync(string host, Type type, Class @class) =>
-            ResolveAsync(new Question(host, type, @class));
+        public Task<IResolveResult> ResolveAsync(string host, Type type, Class @class, CancellationToken cancellationToken = default) =>
+            ResolveAsync(new Question(host, type, @class), cancellationToken);
     }
 }

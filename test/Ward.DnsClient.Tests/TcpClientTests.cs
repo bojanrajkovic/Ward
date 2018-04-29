@@ -85,5 +85,23 @@ namespace Ward.DnsClient.Tests
                 await client.ResolveAsync("example.com", Dns.Type.A, Class.Internet);
             });
         }
+
+        [Fact]
+        public async Task Multiple_threads_can_safely_query()
+        {
+            var client = new TcpDnsClient(IPAddress.Parse("1.1.1.1"), 853, true, "cloudflare-dns.com");
+            var tasks = new Task<IResolveResult>[5];
+            for (var i = 0; i < 5; i++)
+                tasks[i] = client.ResolveAsync("example.com", Dns.Type.A, Class.Internet);
+            var responses = await Task.WhenAll(tasks);
+
+            Assert.All(responses, resp => {
+                Assert.Collection(resp.Answers, answer => {
+                    Assert.Equal("example.com.", answer.Name);
+                    var a = Assert.IsType<AddressRecord>(answer);
+                    Assert.Equal("93.184.216.34", a.Address.ToString());
+                });
+            });
+        }
     }
 }
