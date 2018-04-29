@@ -1,5 +1,6 @@
 using System;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Ward.Dns;
@@ -9,6 +10,7 @@ namespace Ward.DnsClient
     public class UdpDnsClient : IDnsClient
     {
         readonly UdpClient client;
+        readonly SemaphoreSlim semaphore = new SemaphoreSlim(1);
 
         public UdpDnsClient(string serverHost, ushort serverPort)
         {
@@ -16,7 +18,7 @@ namespace Ward.DnsClient
             client.Connect(serverHost, serverPort);
         }
 
-        public async Task<IResolveResult> ResolveAsync(Question question)
+        public async Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default)
         {
             var message = new Message(
                 new Header(
@@ -35,16 +37,27 @@ namespace Ward.DnsClient
                 Array.Empty<Record>()
             );
             var messageData = await MessageWriter.SerializeMessageAsync(message);
-            await client.SendAsync(messageData, messageData.Length);
 
-            var recvResult = await client.ReceiveAsync();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            UdpReceiveResult recvResult;
+            try {
+                await semaphore.WaitAsync();
+                await client.SendAsync(messageData, messageData.Length);
+                cancellationToken.ThrowIfCancellationRequested();
+                recvResult = await client.ReceiveAsync();
+                cancellationToken.ThrowIfCancellationRequested();
+            } finally {
+                semaphore.Release();
+            }
+
             var respBytes = recvResult.Buffer;
             var response = MessageParser.ParseMessage(respBytes, 0);
 
             return new ResolveResult(response, recvResult.Buffer.Length);
         }
 
-        public Task<IResolveResult> ResolveAsync(string host, Dns.Type type, Class @class) =>
-            ResolveAsync(new Question(host, type, @class));
+        public Task<IResolveResult> ResolveAsync(string host, Dns.Type type, Class @class, CancellationToken cancellationToken = default) =>
+            ResolveAsync(new Question(host, type, @class), cancellationToken);
     }
 }
