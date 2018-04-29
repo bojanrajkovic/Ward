@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Ward.Dns;
+using Ward.Dns.Records;
 
 namespace Ward.DnsClient
 {
@@ -29,12 +30,12 @@ namespace Ward.DnsClient
                     1,
                     0,
                     0,
-                    0
+                    1
                 ),
                 new [] { question },
                 Array.Empty<Record>(),
                 Array.Empty<Record>(),
-                Array.Empty<Record>()
+                new [] { new OptRecord(4096, 0, 0, false, Array.Empty<(OptRecord.OptionCode, ReadOnlyMemory<byte>)>()) }
             );
             var messageData = await MessageWriter.SerializeMessageAsync(message);
 
