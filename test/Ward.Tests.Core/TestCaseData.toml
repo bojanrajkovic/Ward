@@ -468,6 +468,11 @@
       dataLength = 8
       data = "93b11ef3eadfaf1a"
 
+[[message]]
+  name = "google.com-a-query-but-double-opt"
+  data = "HfoBIAABAAAAAAACBmdvb2dsZQNjb20AAAEAAQAAKRAAAAAAAAAMAAoACJOxHvPq368aAAApEAAAAAAAAAwACgAIk7Ee8+rfrxo="
+  complete = false
+
 [[records]]
   name = "ipv4-address"
   data = "076578616d706c6503636f6d000001000100000258000410204080"

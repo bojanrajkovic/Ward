@@ -35,6 +35,14 @@ namespace Ward.Dns.Tests
             Assert.Equal(messageBody, serialized);
         }
 
+        [Fact]
+        public void Double_opt_record_throws_when_parsing()
+        {
+            var testCase = TestCaseLoader.LoadMessageTestCase("google.com-a-query-but-double-opt");
+            var data = testCase.MessageData;
+            Assert.Throws<InvalidOperationException>(() => MessageParser.ParseMessage(data, 0));
+        }
+
         [Theory]
         [MemberData(nameof (TestGenerators.GenerateMessageTests), MemberType = typeof(TestGenerators))]
         public void Can_parse_whole_message(MessageManipulationTestCase testCase)
