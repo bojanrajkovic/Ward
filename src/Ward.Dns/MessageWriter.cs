@@ -35,7 +35,7 @@ namespace Ward.Dns
         internal static async Task WriteRecordToStreamAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
         {
             var qname = Utils.WriteQName(r.Name, offsetMap);
-            if (!offsetMap.ContainsKey(r.Name))
+            if (!string.IsNullOrWhiteSpace(r.Name) && !offsetMap.ContainsKey(r.Name))
                 offsetMap.Add(r.Name, (ushort)s.Position);
 
             await s.WriteAsync(qname, 0, qname.Length);
@@ -110,6 +110,19 @@ namespace Ward.Dns
                         expireBytes,
                         minimumTtl
                     );
+                case OptRecord opt:
+                    if (opt.OptionalData.Count == 0)
+                        return Array.Empty<byte>();
+                    else {
+                        using (var optStream = new MemoryStream()) {
+                            foreach (var data in opt.OptionalData) {
+                                await optStream.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)data.optionCode)), 0, 2);
+                                await optStream.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)data.optionData.Length)), 0, 2);
+                                await optStream.WriteAsync(data.optionData.ToArray(), 0, data.optionData.Length);
+                            }
+                            return optStream.ToArray();
+                        }
+                    }
                 case AddressRecord a:
                 case TxtRecord t:
                 default:
