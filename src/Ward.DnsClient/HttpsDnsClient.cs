@@ -14,6 +14,8 @@ namespace Ward.DnsClient
 {
     public class HttpsDnsClient : IDnsClient
     {
+        const int MaxConnections = 10;
+
         static readonly Version http20Version = new Version(2, 0);
 
         readonly IPAddress address;
@@ -31,11 +33,13 @@ namespace Ward.DnsClient
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
                 var handler = new WinHttpHandler();
+                handler.MaxConnectionsPerServer = MaxConnections;
                 if (!string.IsNullOrWhiteSpace(expectedSpkiPin))
                     handler.ServerCertificateValidationCallback = CheckServerCertificateMatchesExpectedHash;
                 httpClient = new HttpClient(handler);
             } else {
                 var handler = new HttpClientHandler();
+                handler.MaxConnectionsPerServer = MaxConnections;
                 if (!string.IsNullOrWhiteSpace(expectedSpkiPin))
                     handler.ServerCertificateCustomValidationCallback = CheckServerCertificateMatchesExpectedHash;
                 httpClient = new HttpClient(handler);
