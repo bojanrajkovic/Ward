@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 
 using Ward.Dns;
+using Ward.Dns.Records;
 using Ward.DnsClient;
 
 using SConsole = System.Console;
@@ -39,7 +40,13 @@ namespace Ward.Console
             SConsole.WriteLine($";; flags: {resolve.Header.Flags.ToString()}; QUERY: {resolve.Questions.Count}, ANSWER: {resolve.Answers.Count}, AUTHORITY: {resolve.Authority.Count}, ADDITIONAL: {resolve.Additional.Count}");
 
             SConsole.WriteLine();
-            // TODO: Write OPT pseudosection once we support EDNS0.
+
+            var optRecord = resolve.Additional.OfType<OptRecord>().SingleOrDefault();
+            if (optRecord != null) {
+                SConsole.WriteLine(";; OPT PSEUDOSECTION:");
+                SConsole.WriteLine($"; EDNS: version: {optRecord.Edns0Version}, flags:{(optRecord.DnsSecOk ? "do" : "")}; udp: {optRecord.UdpPayloadSize}");
+            }
+
             SConsole.WriteLine(";; QUESTION SECTION:");
             foreach (var question in resolve.Questions)
                 SConsole.WriteLine($";{question.Name}\t{question.Class}\t{question.Type}");
@@ -61,8 +68,11 @@ namespace Ward.Console
             if (resolve.Additional.Count > 0) {
                 SConsole.WriteLine();
                 SConsole.WriteLine(";; ADDITIONAL SECTION:");
-                foreach (var record in resolve.Additional)
+                foreach (var record in resolve.Additional) {
+                    if (record is OptRecord _)
+                        continue;
                     SConsole.WriteLine(record);
+                }
             }
 
             var stringFormat = $"ddd MMM dd HH:mm:ss \"{TimeZoneName(queryTime)}\" yyyy";

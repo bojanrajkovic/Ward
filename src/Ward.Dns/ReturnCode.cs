@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace Ward.Dns
 {
-    public enum ReturnCode : byte
+    public enum ReturnCode : ushort
     {
         [Description("The request completed successfully.")]
         NoError = 0,

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Ward.Dns;
+using Ward.Dns.Records;
 
 namespace Ward.DnsClient
 {
@@ -36,7 +37,12 @@ namespace Ward.DnsClient
                 Array.Empty<Record>(),
                 Array.Empty<Record>()
             );
-            var messageData = await MessageWriter.SerializeMessageAsync(message);
+            var messageData = await MessageWriter.SerializeMessageAsync(
+                message,
+                writeOpt: true,
+                udpPayloadSize: 4096
+            );
+            await client.SendAsync(messageData, messageData.Length);
 
             cancellationToken.ThrowIfCancellationRequested();
 

@@ -32,6 +32,46 @@
     address = "93.184.216.34"
 
 [[message]]
+  name = "example.com-a-response-from-8.8.8.8-with-unknown-record"
+  data = "qqqBgAABAAEAAAABB2V4YW1wbGUDY29tAAABAAHADAABAAEAADu8AARduNgiAAANAAEAAAJYAAA="
+  complete = true
+  [message.expected.header]
+    id = 0xaaaa
+    query = false
+    opcode = "Query"
+    authoritative = false
+    truncated = false
+    recurse = true
+    recursionAvailable = true
+    z = false
+    authenticated = false
+    checkingDisabled = false
+    returnCode = "NoError"
+    questions = 1
+    answers = 1
+    authority = 0
+    additional = 1
+  [[message.expected.questions]]
+    name = "example.com."
+    class = "Internet"
+    type = "A"
+  [[message.expected.answers]]
+    name = "example.com."
+    class = "Internet"
+    type = "A"
+    ttl = 15292
+    length = 4
+    data = "5db8d822"
+    address = "93.184.216.34"
+  [[message.expected.additional]]
+    name = ""
+    class = "Internet"
+    type = "HINFO"
+    ttl = 600
+    length = 0
+    data = ""
+
+[[message]]
   name = "coderinserepeat.com-mx-query-from-1.1.1.1"
   data = "jKaBgAABAAUAAAAAD2NvZGVyaW5zZXJlcGVhdANjb20AAA8AAcAMAA8AAQAAASwAEwABBWFzcG14AWwGZ29vZ2xlwBzADAAPAAEAAAEsAAkABQRhbHQxwDPADAAPAAEAAAEsAAkABQRhbHQywDPADAAPAAEAAAEsAAkACgRhbHQzwDPADAAPAAEAAAEsAAkACgRhbHQ0wDM="
   complete = true
@@ -250,6 +290,10 @@
     ttl = 599
     length = 0
     data = ""
+    udpPayload = 1536
+    extendedRcode = 0
+    version = 0
+    dnsSecOK = false
 
 [[message]]
   name = "4.4.8.8.in-addr-arpa-ptr-query"
@@ -380,6 +424,10 @@
     ttl = 600
     length = 0
     data = ""
+    udpPayload = 1536
+    extendedRcode = 0
+    version = 0
+    dnsSecOK = false
 
 [[message]]
   name = "org.coderinserepeat.com-with-authorities-query"
@@ -451,6 +499,19 @@
     ttl = 0
     length = 12
     data = "000a000893b11ef3eadfaf1a"
+    udpPayload = 4096
+    extendedRcode = 0
+    version = 0
+    dnsSecOK = false
+    [[message.expected.additional.optionalData]]
+      optionCode = "Cookie"
+      dataLength = 8
+      data = "93b11ef3eadfaf1a"
+
+[[message]]
+  name = "google.com-a-query-but-double-opt"
+  data = "HfoBIAABAAAAAAACBmdvb2dsZQNjb20AAAEAAQAAKRAAAAAAAAAMAAoACJOxHvPq368aAAApEAAAAAAAAAwACgAIk7Ee8+rfrxo="
+  complete = false
 
 [[records]]
   name = "ipv4-address"

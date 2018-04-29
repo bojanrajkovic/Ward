@@ -17,7 +17,14 @@ namespace Ward.DnsClient.Tests
             Assert.NotNull(resolve);
             Assert.Single(resolve.Answers);
             Assert.Empty(resolve.Authority);
-            Assert.Empty(resolve.Additional);
+            Assert.Single(resolve.Additional);
+
+            var opt = Assert.IsType<OptRecord>(resolve.Additional[0]);
+            Assert.Equal(0, opt.Edns0Version);
+            Assert.False(opt.DnsSecOk);
+            Assert.Empty(opt.OptionalData);
+            Assert.True(opt.UdpPayloadSize > 512);
+
             Assert.Single(resolve.Questions);
             Assert.NotNull(resolve.Header);
             Assert.True(resolve.MessageSize > 0);
@@ -37,7 +44,14 @@ namespace Ward.DnsClient.Tests
             Assert.NotEmpty(resolve.Answers);
             Assert.Equal(5, resolve.Answers.Count);
             Assert.Empty(resolve.Authority);
-            Assert.Empty(resolve.Additional);
+            Assert.Single(resolve.Additional);
+
+            var opt = Assert.IsType<OptRecord>(resolve.Additional[0]);
+            Assert.Equal(0, opt.Edns0Version);
+            Assert.False(opt.DnsSecOk);
+            Assert.Empty(opt.OptionalData);
+            Assert.True(opt.UdpPayloadSize > 512);
+
             Assert.Single(resolve.Questions);
             Assert.NotNull(resolve.Header);
             Assert.True(resolve.MessageSize > 0);
