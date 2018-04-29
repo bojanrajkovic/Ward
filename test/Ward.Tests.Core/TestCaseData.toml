@@ -250,6 +250,10 @@
     ttl = 599
     length = 0
     data = ""
+    udpPayload = 1536
+    extendedRcode = 0
+    version = 0
+    dnsSecOK = false
 
 [[message]]
   name = "4.4.8.8.in-addr-arpa-ptr-query"
@@ -380,6 +384,10 @@
     ttl = 600
     length = 0
     data = ""
+    udpPayload = 1536
+    extendedRcode = 0
+    version = 0
+    dnsSecOK = false
 
 [[message]]
   name = "org.coderinserepeat.com-with-authorities-query"
@@ -451,6 +459,14 @@
     ttl = 0
     length = 12
     data = "000a000893b11ef3eadfaf1a"
+    udpPayload = 4096
+    extendedRcode = 0
+    version = 0
+    dnsSecOK = false
+    [[message.expected.additional.optionalData]]
+      optionCode = "Cookie"
+      dataLength = 8
+      data = "93b11ef3eadfaf1a"
 
 [[records]]
   name = "ipv4-address"

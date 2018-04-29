@@ -5,6 +5,7 @@ using System.Linq;
 using Nett;
 using Ward.Dns;
 using Ward.Dns.Records;
+using Ward.Dns.Tests;
 using Xunit;
 
 namespace Ward.Dns.Tests
@@ -75,6 +76,34 @@ namespace Xunit
                 case Ward.Dns.Type.NS:
                     Assert.NSRecord(expectedRecord, (NsRecord)record);
                     break;
+                case Ward.Dns.Type.OPT:
+                    Assert.OPTRecord(expectedRecord, (OptRecord)record);
+                    break;
+            }
+        }
+
+        public static void OPTRecord(TomlTable expectedRecord, OptRecord record)
+        {
+            Assert.Equal(expectedRecord.Get<ushort>("udpPayload"), record.UdpPayloadSize);
+            Assert.Equal(expectedRecord.Get<byte>("extendedRcode"), record.ExtendedRcode);
+            Assert.Equal(expectedRecord.Get<byte>("version"), record.Edns0Version);
+            Assert.Equal(expectedRecord.Get<bool>("dnsSecOK"), record.DnsSecOk);
+
+            if (expectedRecord.ContainsKey("optionalData")) {
+                var optionalData = expectedRecord.Get<TomlTableArray>("optionalData");
+                Assert.Equal(optionalData.Items.Count, record.OptionalData.Count());
+                var recordData = (IList<(OptRecord.OptionCode optionCode, ReadOnlyMemory<byte> optionalData)>)record.OptionalData;
+                recordData.ForEach((val, idx) => {
+                    var expectedData = optionalData.Items[idx];
+                    Assert.Equal(expectedData.Get<OptRecord.OptionCode>("optionCode"), val.optionCode);
+                    Assert.Equal(expectedData.Get<int>("dataLength"), val.optionalData.Length);
+                    Assert.Equal(
+                        expectedData.Get<string>("data"),
+                        val.optionalData.ToArray().Aggregate(string.Empty, (s, v) => {
+                            return s += v.ToString("X2").ToLower();
+                        })
+                    );
+                });
             }
         }
 
