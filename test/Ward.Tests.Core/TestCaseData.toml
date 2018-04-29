@@ -32,6 +32,46 @@
     address = "93.184.216.34"
 
 [[message]]
+  name = "example.com-a-response-from-8.8.8.8-with-unknown-record"
+  data = "qqqBgAABAAEAAAABB2V4YW1wbGUDY29tAAABAAHADAABAAEAADu8AARduNgiAAANAAEAAAJYAAA="
+  complete = true
+  [message.expected.header]
+    id = 0xaaaa
+    query = false
+    opcode = "Query"
+    authoritative = false
+    truncated = false
+    recurse = true
+    recursionAvailable = true
+    z = false
+    authenticated = false
+    checkingDisabled = false
+    returnCode = "NoError"
+    questions = 1
+    answers = 1
+    authority = 0
+    additional = 1
+  [[message.expected.questions]]
+    name = "example.com."
+    class = "Internet"
+    type = "A"
+  [[message.expected.answers]]
+    name = "example.com."
+    class = "Internet"
+    type = "A"
+    ttl = 15292
+    length = 4
+    data = "5db8d822"
+    address = "93.184.216.34"
+  [[message.expected.additional]]
+    name = ""
+    class = "Internet"
+    type = "HINFO"
+    ttl = 600
+    length = 0
+    data = ""
+
+[[message]]
   name = "coderinserepeat.com-mx-query-from-1.1.1.1"
   data = "jKaBgAABAAUAAAAAD2NvZGVyaW5zZXJlcGVhdANjb20AAA8AAcAMAA8AAQAAASwAEwABBWFzcG14AWwGZ29vZ2xlwBzADAAPAAEAAAEsAAkABQRhbHQxwDPADAAPAAEAAAEsAAkABQRhbHQywDPADAAPAAEAAAEsAAkACgRhbHQzwDPADAAPAAEAAAEsAAkACgRhbHQ0wDM="
   complete = true
