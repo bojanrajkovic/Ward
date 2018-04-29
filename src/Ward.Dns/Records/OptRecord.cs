@@ -62,7 +62,7 @@ namespace Ward.Dns.Records
             OptionalData = optionalData.AsReadOnly();
         }
 
-        public OptRecord(
+        internal OptRecord(
             ushort payloadSize,
             byte extendedRcode,
             byte edns0Version,

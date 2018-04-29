@@ -25,11 +25,41 @@ namespace Ward.Dns
                     await WriteQuestionToStreamAsync(question, s, offsetMap);
 
                 var records = m.Answers.Concat(m.Authority).Concat(m.Additional);
-                foreach (var record in records)
-                    await WriteRecordToStreamAsync(record, s, offsetMap);
+                foreach (var record in records) {
+                    if (record is OptRecord opt)
+                        await WriteOptRecordToStreamAsync(opt, m.Header, s);
+                    else
+                        await WriteRecordToStreamAsync(record, s, offsetMap);
+                }
 
                 return s.ToArray();
             }
+        }
+
+        internal static async Task WriteOptRecordToStreamAsync(OptRecord opt, Header header, Stream s)
+        {
+            // OPT pseudo-RR's always have a null name.
+            await s.WriteAsync(new byte[] { 0 }, 0, 1);
+
+            // Write the OPT type, and the UDP payload size as the class.
+            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)Type.OPT)), 0, 2);
+            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)opt.UdpPayloadSize)), 0, 2);
+
+            // Compute the extended RCODE, which is the high 8 bits of the return code.
+            // We can safely ignore the one in the OPT record for now, because the only way to create
+            // a mismatch is to modify Ward internals.
+            byte extendedRcode = (byte)((ushort)header.ReturnCode >> 4);
+
+            s.WriteByte(extendedRcode);
+            s.WriteByte(opt.Edns0Version);
+
+            var remainingFlags = (opt.DnsSecOk ? (ushort)(1 << 15) : (ushort)0);
+            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(remainingFlags)), 0, 2);
+
+            // Now we've written type, class, and "TTL", we can write the data as normal.
+            var data = await GetDataForRecordAsync(opt, s, null);
+            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)data.Length)), 0, 2);
+            await s.WriteAsync(data.ToArray(), 0, data.Length);
         }
 
         internal static async Task WriteRecordToStreamAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
@@ -159,7 +189,8 @@ namespace Ward.Dns
             flags |= (ushort)((h.Flags.Z ? 1 : 0) << 6);
             flags |= (ushort)((h.Flags.Authenticated ? 1 : 0) << 5);
             flags |= (ushort)((h.Flags.CheckingDisabled ? 1 : 0) << 4);
-            flags |= (ushort)h.ReturnCode;
+            // We can only take the _bottom 4 bits_ here, so mask off everything but the bottom 4.
+            flags |= (byte)((ushort)h.ReturnCode & 0b0000_0000_0000_1111);
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(flags)), 0, 2);
 
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(h.TotalQuestions)), 0, 2);
