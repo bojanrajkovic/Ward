@@ -31,6 +31,8 @@ namespace Ward.Dns.Records
                     return new PtrRecord(name, @class, ttl, length, data, message);
                 case Type.TXT:
                     return new TxtRecord(name, @class, ttl, length, data);
+                case Type.OPT:
+                    return new OptRecord(name, (ushort)@class, ttl, length, data);
                 default:
                     return new Record(name, type, @class, ttl, length, data);
             }
