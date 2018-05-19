@@ -113,7 +113,7 @@ namespace Ward.Console
             var resolve = await client.ResolveAsync(questions);
             timer.Stop();
 
-            SConsole.WriteLine($"; <<>> ward dig {Program.Version} <<>> {string.Join(", ", names)} {queryType}");
+            SConsole.WriteLine($"; <<>> ward dig {Program.Version.ToString(3)} <<>> {string.Join(", ", names)} {queryType}");
             SConsole.WriteLine(";; Got answer:");
             SConsole.WriteLine($";; ->>HEADER<<- opcode: {resolve.Header.Opcode}, status: {resolve.Header.ReturnCode}, id: {resolve.Header.Id}");
             SConsole.WriteLine($";; flags: {resolve.Header.Flags.ToString()}; QUERY: {resolve.Questions.Count}, ANSWER: {resolve.Answers.Count}, AUTHORITY: {resolve.Authority.Count}, ADDITIONAL: {resolve.Additional.Count}");
