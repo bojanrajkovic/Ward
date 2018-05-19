@@ -3,14 +3,16 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ward.DnsClient\Ward.DnsClient.csproj" />
   </ItemGroup>
   <Target Name="_BuildDotNetCoreToolPackage">
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Properties="Configuration=$(Configuration)"
-             Targets="Restore;Build;Publish" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="Configuration=$(Configuration)" Targets="Restore;Build;Publish" />
     <ItemGroup>
       <JunkFiles Include="$(OutputPath)\*.deps.json" />
       <JunkFiles Include="$(OutputPath)\*.runtimeconfig.dev.json" />
