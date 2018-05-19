@@ -21,15 +21,15 @@ namespace Ward.DnsClient
 
         static readonly Version http20Version = new Version(2, 0);
 
-        readonly IPAddress address;
+        readonly string host;
         readonly ushort port;
         readonly string tlsHost;
         readonly string expectedSpkiPin;
         readonly HttpClient httpClient;
 
-        public HttpsDnsClient(IPAddress address, ushort port, string tlsHost, string expectedSpkiPin = null)
+        public HttpsDnsClient(string host, ushort port, string tlsHost, string expectedSpkiPin = null)
         {
-            this.address = address;
+            this.host = host;
             this.port = port;
             this.tlsHost = tlsHost;
             this.expectedSpkiPin = expectedSpkiPin;
@@ -83,7 +83,7 @@ namespace Ward.DnsClient
                         ContentType = MediaTypeHeaderValue.Parse("application/dns-udpwireformat")
                     }
                 },
-                RequestUri = new UriBuilder("https", address.ToString(), port, "dns-query").Uri,
+                RequestUri = new UriBuilder("https", host.ToString(), port, "dns-query").Uri,
                 Method = HttpMethod.Post
             };
             msg.Headers.TryAddWithoutValidation("Accept", "application/dns-udpwireformat");

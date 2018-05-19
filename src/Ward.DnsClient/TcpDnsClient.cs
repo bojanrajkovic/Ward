@@ -22,7 +22,7 @@ namespace Ward.DnsClient
         static readonly ArrayPool<byte> BufferPool = ArrayPool<byte>.Shared;
 
         readonly SemaphoreSlim semaphore = new SemaphoreSlim(1);
-        readonly IPAddress address;
+        readonly string host;
         readonly ushort port;
         readonly string tlsHost;
         readonly string expectedSpkiPin;
@@ -32,9 +32,9 @@ namespace Ward.DnsClient
 
         public TimeSpan ConnectTimeout { get; }
 
-        public TcpDnsClient(IPAddress address, ushort port, bool tls, string tlsHost = "", string expectedSpkiPin = "", int connectTimeout = 5000)
+        public TcpDnsClient(string host, ushort port, bool tls, string tlsHost = "", string expectedSpkiPin = "", int connectTimeout = 5000)
         {
-            this.address = address;
+            this.host = host;
             this.port = port;
             this.tls = tls;
             this.tlsHost = tlsHost;
@@ -49,7 +49,7 @@ namespace Ward.DnsClient
             if (tcpClient.Connected)
                 return stream;
 
-            var connectTask = tcpClient.ConnectAsync(address, port);
+            var connectTask = tcpClient.ConnectAsync(host, port);
             var timeout = Task.Delay(ConnectTimeout);
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -59,13 +59,13 @@ namespace Ward.DnsClient
             cancellationToken.ThrowIfCancellationRequested();
 
             if (first == timeout)
-                throw new TimeoutException($"Timeout connecting to {address}:{port}");
+                throw new TimeoutException($"Timeout connecting to {host}:{port}");
 
             if (first.IsFaulted)
                 ExceptionDispatchInfo.Capture (first.Exception.InnerException).Throw ();
 
             if (!tcpClient.Connected)
-                throw new Exception($"Failed to connect to {address}:{port}");
+                throw new Exception($"Failed to connect to {host}:{port}");
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -77,7 +77,7 @@ namespace Ward.DnsClient
             cancellationToken.ThrowIfCancellationRequested();
 
             var sslStream = new SslStream(stream, false);
-            await sslStream.AuthenticateAsClientAsync(tlsHost, null, SslProtocols.Tls12, true);
+            await sslStream.AuthenticateAsClientAsync(tlsHost ?? host.ToString(), null, SslProtocols.Tls12, true);
 
             stream = sslStream;
 
