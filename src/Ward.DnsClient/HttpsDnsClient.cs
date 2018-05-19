@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -19,15 +21,15 @@ namespace Ward.DnsClient
 
         static readonly Version http20Version = new Version(2, 0);
 
-        readonly IPAddress address;
+        readonly string host;
         readonly ushort port;
         readonly string tlsHost;
         readonly string expectedSpkiPin;
         readonly HttpClient httpClient;
 
-        public HttpsDnsClient(IPAddress address, ushort port, string tlsHost, string expectedSpkiPin = null)
+        public HttpsDnsClient(string host, ushort port, string tlsHost, string expectedSpkiPin = null)
         {
-            this.address = address;
+            this.host = host;
             this.port = port;
             this.tlsHost = tlsHost;
             this.expectedSpkiPin = expectedSpkiPin;
@@ -57,20 +59,18 @@ namespace Ward.DnsClient
             return policyErrors == SslPolicyErrors.None && cert.GetSpkiPinHash() == expectedSpkiPin;
         }
 
-        public async Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default)
+        public Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default) =>
+            ResolveAsync(new[] { question }, cancellationToken);
+
+        public async Task<IResolveResult> ResolveAsync(IEnumerable<Question> questions, CancellationToken cancellationToken = default)
         {
+            if (questions.Count() > ushort.MaxValue)
+                throw new ArgumentException("Too many questions for a single message.");
+
+            var flags = new Header.HeaderFlags(true, false, false, true, true, false, false, false);
             var message = new Message(
-                new Header(
-                    null,
-                    Opcode.Query,
-                    ReturnCode.NoError,
-                    new Header.HeaderFlags(true, false, false, true, true, false, false, false),
-                    1,
-                    0,
-                    0,
-                    0
-                ),
-                new [] { question },
+                new Header(null, Opcode.Query, ReturnCode.NoError, flags, (ushort)questions.Count(), 0, 0, 0),
+                questions.ToArray(),
                 Array.Empty<Record>(),
                 Array.Empty<Record>(),
                 Array.Empty<Record>()
@@ -83,7 +83,7 @@ namespace Ward.DnsClient
                         ContentType = MediaTypeHeaderValue.Parse("application/dns-udpwireformat")
                     }
                 },
-                RequestUri = new UriBuilder("https", address.ToString(), port, "dns-query").Uri,
+                RequestUri = new UriBuilder("https", host.ToString(), port, "dns-query").Uri,
                 Method = HttpMethod.Post
             };
             msg.Headers.TryAddWithoutValidation("Accept", "application/dns-udpwireformat");

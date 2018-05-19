@@ -26,7 +26,6 @@ namespace Ward.DnsClient.Tests
             Assert.True(opt.UdpPayloadSize > 512);
 
             Assert.Single(resolve.Questions);
-            Assert.NotNull(resolve.Header);
             Assert.True(resolve.MessageSize > 0);
 
             var a = Assert.IsType<AddressRecord>(resolve.Answers[0]);
@@ -53,7 +52,6 @@ namespace Ward.DnsClient.Tests
             Assert.True(opt.UdpPayloadSize > 512);
 
             Assert.Single(resolve.Questions);
-            Assert.NotNull(resolve.Header);
             Assert.True(resolve.MessageSize > 0);
         }
 

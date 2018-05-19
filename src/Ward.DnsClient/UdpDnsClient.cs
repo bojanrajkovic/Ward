@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,24 +21,23 @@ namespace Ward.DnsClient
             client.Connect(serverHost, serverPort);
         }
 
-        public async Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default)
+        public Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default) =>
+            ResolveAsync(new[] { question }, cancellationToken);
+
+        public async Task<IResolveResult> ResolveAsync(IEnumerable<Question> questions, CancellationToken cancellationToken = default)
         {
+            if (questions.Count() > ushort.MaxValue)
+                throw new ArgumentException("Too many questions for a single message.");
+
+            var flags = new Header.HeaderFlags(true, false, false, true, true, false, false, false);
             var message = new Message(
-                new Header(
-                    null,
-                    Opcode.Query,
-                    ReturnCode.NoError,
-                    new Header.HeaderFlags(true, false, false, true, true, false, false, false),
-                    1,
-                    0,
-                    0,
-                    0
-                ),
-                new [] { question },
+                new Header(null, Opcode.Query, ReturnCode.NoError, flags, (ushort)questions.Count(), 0, 0, 0),
+                questions.ToArray(),
                 Array.Empty<Record>(),
                 Array.Empty<Record>(),
                 Array.Empty<Record>()
             );
+
             var messageData = await MessageWriter.SerializeMessageAsync(
                 message,
                 writeOpt: true,

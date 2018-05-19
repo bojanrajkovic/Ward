@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -20,7 +22,7 @@ namespace Ward.DnsClient
         static readonly ArrayPool<byte> BufferPool = ArrayPool<byte>.Shared;
 
         readonly SemaphoreSlim semaphore = new SemaphoreSlim(1);
-        readonly IPAddress address;
+        readonly string host;
         readonly ushort port;
         readonly string tlsHost;
         readonly string expectedSpkiPin;
@@ -30,9 +32,9 @@ namespace Ward.DnsClient
 
         public TimeSpan ConnectTimeout { get; }
 
-        public TcpDnsClient(IPAddress address, ushort port, bool tls, string tlsHost = "", string expectedSpkiPin = "", int connectTimeout = 5000)
+        public TcpDnsClient(string host, ushort port, bool tls, string tlsHost = "", string expectedSpkiPin = "", int connectTimeout = 5000)
         {
-            this.address = address;
+            this.host = host;
             this.port = port;
             this.tls = tls;
             this.tlsHost = tlsHost;
@@ -47,7 +49,7 @@ namespace Ward.DnsClient
             if (tcpClient.Connected)
                 return stream;
 
-            var connectTask = tcpClient.ConnectAsync(address, port);
+            var connectTask = tcpClient.ConnectAsync(host, port);
             var timeout = Task.Delay(ConnectTimeout);
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -57,13 +59,13 @@ namespace Ward.DnsClient
             cancellationToken.ThrowIfCancellationRequested();
 
             if (first == timeout)
-                throw new TimeoutException($"Timeout connecting to {address}:{port}");
+                throw new TimeoutException($"Timeout connecting to {host}:{port}");
 
             if (first.IsFaulted)
                 ExceptionDispatchInfo.Capture (first.Exception.InnerException).Throw ();
 
             if (!tcpClient.Connected)
-                throw new Exception($"Failed to connect to {address}:{port}");
+                throw new Exception($"Failed to connect to {host}:{port}");
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -75,7 +77,7 @@ namespace Ward.DnsClient
             cancellationToken.ThrowIfCancellationRequested();
 
             var sslStream = new SslStream(stream, false);
-            await sslStream.AuthenticateAsClientAsync(tlsHost, null, SslProtocols.Tls12, true);
+            await sslStream.AuthenticateAsClientAsync(tlsHost ?? host.ToString(), null, SslProtocols.Tls12, true);
 
             stream = sslStream;
 
@@ -93,20 +95,18 @@ namespace Ward.DnsClient
             return stream;
         }
 
-        public async Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default)
+        public Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default) =>
+            ResolveAsync(new[] { question }, cancellationToken);
+
+        public async Task<IResolveResult> ResolveAsync(IEnumerable<Question> questions, CancellationToken cancellationToken = default)
         {
+            if (questions.Count() > ushort.MaxValue)
+                throw new ArgumentException("Too many questions for a single message.");
+
+            var flags = new Header.HeaderFlags(true, false, false, true, true, false, false, false);
             var message = new Message(
-                new Header(
-                    null,
-                    Opcode.Query,
-                    ReturnCode.NoError,
-                    new Header.HeaderFlags(true, false, false, true, true, false, false, false),
-                    1,
-                    0,
-                    0,
-                    0
-                ),
-                new [] { question },
+                new Header(null, Opcode.Query, ReturnCode.NoError, flags, (ushort)questions.Count(), 0, 0, 0),
+                questions.ToArray(),
                 Array.Empty<Record>(),
                 Array.Empty<Record>(),
                 Array.Empty<Record>()
