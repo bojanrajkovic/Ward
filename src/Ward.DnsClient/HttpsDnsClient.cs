@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -57,20 +59,18 @@ namespace Ward.DnsClient
             return policyErrors == SslPolicyErrors.None && cert.GetSpkiPinHash() == expectedSpkiPin;
         }
 
-        public async Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default)
+        public Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default) =>
+            ResolveAsync(new[] { question }, cancellationToken);
+
+        public async Task<IResolveResult> ResolveAsync(IEnumerable<Question> questions, CancellationToken cancellationToken = default)
         {
+            if (questions.Count() > ushort.MaxValue)
+                throw new ArgumentException("Too many questions for a single message.");
+
+            var flags = new Header.HeaderFlags(true, false, false, true, true, false, false, false);
             var message = new Message(
-                new Header(
-                    null,
-                    Opcode.Query,
-                    ReturnCode.NoError,
-                    new Header.HeaderFlags(true, false, false, true, true, false, false, false),
-                    1,
-                    0,
-                    0,
-                    0
-                ),
-                new [] { question },
+                new Header(null, Opcode.Query, ReturnCode.NoError, flags, (ushort)questions.Count(), 0, 0, 0),
+                questions.ToArray(),
                 Array.Empty<Record>(),
                 Array.Empty<Record>(),
                 Array.Empty<Record>()
