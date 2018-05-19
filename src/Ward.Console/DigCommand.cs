@@ -16,10 +16,9 @@ namespace Ward.Console
 {
     class DigCommand : Command
     {
-        bool showHelp;
         Dns.Type queryType = Dns.Type.A;
         string serverHost;
-        bool useTcp, useTls, useHttps;
+        bool useTcp, useTls, useHttps, allowMultiQuestion, showHelp;
         ushort? port;
         string spkiHash;
 
@@ -36,7 +35,8 @@ namespace Ward.Console
                 { "tls", "Use TLS with DNS over TCP", v => useTls = (v != null) },
                 { "https", "Use DNS over HTTPS", v => useHttps = (v != null) },
                 { "port|p=", "Connect on the specified {port}.", (ushort port) => this.port = port },
-                { "spkiHash", "Expected SPKI hash when using TLS or DoH.", spkiHash => this.spkiHash = spkiHash }
+                { "spki-hash", "Expected SPKI hash when using TLS or DoH.", spkiHash => this.spkiHash = spkiHash },
+                { "allow-multi-question", "Allow multiple questions in a single message.", v => allowMultiQuestion = (v != null) },
             };
         }
 
@@ -53,6 +53,12 @@ namespace Ward.Console
                 if (!names.Any()) {
                     CommandSet.Error.WriteLine("ward: Missing names to look up—you must pass at least one name.");
                     CommandSet.Error.WriteLine("ward: Run `ward help dig` for details.");
+                    return 1;
+                }
+
+                if (names.Count > 1 && !allowMultiQuestion) {
+                    CommandSet.Error.WriteLine("ward: Most DNS servers do not respond well to multiple questions in one message.");
+                    CommandSet.Error.WriteLine("ward: If you're sure you know what you're doing, pass --allow-multi-question.");
                     return 1;
                 }
 
