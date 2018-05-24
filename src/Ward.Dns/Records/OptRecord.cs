@@ -8,7 +8,7 @@ using static Ward.Dns.Utils;
 namespace Ward.Dns.Records
 {
     /// <summary>
-    /// Creates an EDNS0 OPT pseudo-RR.
+    /// An EDNS0 OPT pseudo-RR.
     /// </summary>
     public class OptRecord : Record
     {

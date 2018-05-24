@@ -4,6 +4,9 @@ using static Ward.Dns.Utils;
 
 namespace Ward.Dns.Records
 {
+    /// <summary>
+    /// An MX record.
+    /// </summary>
     public class MailExchangerRecord : Record
     {
         /// <summary>

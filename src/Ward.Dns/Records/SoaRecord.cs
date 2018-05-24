@@ -6,7 +6,7 @@ using static Ward.Dns.Utils;
 namespace Ward.Dns.Records
 {
     /// <summary>
-    /// Creates a SOA record.
+    /// A SOA record.
     /// </summary>
     public class SoaRecord : Record
     {
