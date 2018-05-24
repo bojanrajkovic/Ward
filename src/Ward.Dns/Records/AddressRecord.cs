@@ -15,27 +15,11 @@ namespace Ward.Dns.Records
         public IPAddress Address { get; }
 
         /// <summary>
-        /// Creates a <see cref="AddressRecord"/>.
+        /// Creates an A/AAAA record.
         /// </summary>
         /// <remarks>
-        /// Only used from internal parsing code&mdash;<see cref="RecordFactory"/> and callers
-        /// of <see cref="RecordFactory.Create"/>. For constructing an address record outside of
-        /// the message parsing loop, <see cref="AddressRecord.AddressRecord(string, Type, Class, uint, IPAddress)"/>.
+        /// Only used from internal parsing code.
         /// </remarks>
-        /// <param name="name">The owner-name (or label) to which this record belongs.</param>
-        /// <param name="type">
-        /// The type of this record, constrained to <see cref="Type.A"/> or <see cref="Type.AAAA"/>.
-        /// </param>
-        /// <param name="class">The record class.</param>
-        /// <param name="timeToLive">The record time to live.</param>
-        /// <param name="length">Length of the record data.</param>
-        /// <param name="data">
-        /// A pointer to a <see cref="ReadOnlyMemory{T}"/> containing the record data.
-        /// </param>
-        /// <exception cref="ArgumentOutOfRangeException">
-        /// Thrown if a <see cref="Type"/> other than <c>Type.A</c> or <c>Type.AAAA</c>
-        /// is passed to the constructor.
-        /// </exception>
         internal AddressRecord(
             string name,
             Type type,
@@ -51,9 +35,9 @@ namespace Ward.Dns.Records
         }
 
         /// <summary>
-        /// Creates a <see cref="AddressRecord"/>.
+        /// Creates an A/AAAA record.
         /// </summary>
-        /// <param name="name">The owner name (or label) to which this record belongs.</param>
+        /// <param name="name">The owner-name (or label) to which this record belongs.</param>
         /// <param name="type">
         /// The type of this record, constrained to <see cref="Type.A"/> or <see cref="Type.AAAA"/>.
         /// </param>
@@ -76,6 +60,10 @@ namespace Ward.Dns.Records
         ) {
         }
 
+        /// <summary>
+        /// Converts the current record to a string.
+        /// </summary>
+        /// <returns>A string version of the current record.</returns>
         [System.Diagnostics.DebuggerStepThrough]
         public override string ToString() => $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{Address}";
     }
