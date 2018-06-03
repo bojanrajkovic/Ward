@@ -74,20 +74,11 @@ namespace Ward.Console
             }
         }
 
-        IEnumerable<IPAddress> GetDnsAddresses() => NetworkInterface.GetAllNetworkInterfaces()
-                                                                    .Where(
-                                                                        ni => ni.OperationalStatus == OperationalStatus.Up
-                                                                        && ni.NetworkInterfaceType != NetworkInterfaceType.Loopback
-                                                                    )
-                                                                    .Select(ni => ni.GetIPProperties())
-                                                                    .SelectMany(ipprops => ipprops.DnsAddresses.ToArray())
-                                                                    .Where(ip => !ip.IsIPv6SiteLocal);
-
         public async Task<int> RunAsync(IEnumerable<string> names)
         {
             var queryTime = DateTime.Now;
 
-            string dnsServer = serverHost ?? GetDnsAddresses().First().ToString();
+            string dnsServer = serverHost ?? Utils.GetDnsAddresses().First().ToString();
             IDnsClient client;
 
             if (useTcp)
