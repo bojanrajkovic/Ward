@@ -11,6 +11,7 @@ namespace Ward.Console
     class TuiCommand : Command
     {
         IDnsClient dnsClient;
+        string host;
 
         public TuiCommand() : base("tui", "Curses-based terminal DNS UI.")
         {
@@ -31,15 +32,17 @@ namespace Ward.Console
             top.Add(win);
 
             var menu = new MenuBar(new MenuBarItem[] {
-                new MenuBarItem ("_File", new MenuItem[] {
-                    new MenuItem ("_Quit", "", () => { top.Running = false; })
+                new MenuBarItem("_File", new MenuItem[] {
+                    new MenuItem("_Quit", "", () => { top.Running = false; })
                 })
             });
             top.Add(menu);
 
             var name = new Label("Name To Query") { X = 3, Y = 2 };
             var nameEntry = new TextField(string.Empty) { X = name.X + name.Text.Length + 1, Y = 2 };
-            var queryLabel = new Label("Query Type") { X = 3, Y = 4 };
+            var server = new Label("Server") { X = 3, Y = 4 };
+            var serverEntry = new TextField(string.Empty) { X = server.X + server.Text.Length + 1, Y = 4 };
+            var queryLabel = new Label("Query Type") { X = 3, Y = 6 };
             var dnsTypeRadio = new RadioGroup(new [] {
                 "A",
                 "CAA",
@@ -49,18 +52,29 @@ namespace Ward.Console
                 "PTR",
                 "SOA",
                 "TXT"
-            }, 0) { X = queryLabel.X + queryLabel.Text.Length + 1, Y = 4 };
+            }, 0) { X = queryLabel.X + queryLabel.Text.Length + 1, Y = 6 };
 
             TextView outputView = null;
             var quitButton = new Button("Quit") {
                 X = 3,
-                Y = 4 + dnsTypeRadio.RadioLabels.Length + 1,
+                Y = 6 + dnsTypeRadio.RadioLabels.Length + 1,
                 Clicked = () => { top.Running = false; }
             };
             var runQueryButton = new Button("Run Query") {
                 X = Pos.Right(quitButton) + 4,
-                Y = 4 + dnsTypeRadio.RadioLabels.Length + 1,
+                Y = 6 + dnsTypeRadio.RadioLabels.Length + 1,
                 Clicked = async () => {
+                    if (serverEntry.Text.ToString() != host) {
+                        var newHost = serverEntry.Text.ToString();
+                        if (string.IsNullOrWhiteSpace(newHost))
+                            newHost = Utils.GetDnsAddresses().First().ToString();
+
+                        if (host != newHost) {
+                            host = newHost;
+                            dnsClient = new UdpDnsClient(host, 53);
+                        }
+                    }
+
                     try {
                         var timer = Stopwatch.StartNew();
                         var result = await dnsClient.ResolveAsync(
@@ -71,7 +85,7 @@ namespace Ward.Console
                         timer.Stop();
                         var resultText = string.Join(Environment.NewLine, result.Answers)
                             + $"{Environment.NewLine}{Environment.NewLine}"
-                            + $"Time: {timer.Elapsed.TotalMilliseconds}ms";
+                            + $"Server: {host} - Protocol: UDP - Time: {timer.Elapsed.TotalMilliseconds}ms";
                         outputView.Text = resultText;
                         Application.Current.SetNeedsDisplay();
                     } catch (Exception e) {
@@ -82,7 +96,7 @@ namespace Ward.Console
 
             outputView = new TextView() {
                 X = 3,
-                Y = 6 + dnsTypeRadio.RadioLabels.Length + 1,
+                Y = 8 + dnsTypeRadio.RadioLabels.Length + 1,
                 Width = Dim.Fill(),
                 Height = Dim.Fill(),
                 Text = "",
@@ -92,6 +106,8 @@ namespace Ward.Console
             win.Add(
                 name,
                 nameEntry,
+                server,
+                serverEntry,
                 queryLabel,
                 dnsTypeRadio,
                 quitButton,
