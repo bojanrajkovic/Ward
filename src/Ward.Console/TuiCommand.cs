@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+
 using Mono.Options;
 using Terminal.Gui;
 using Ward.DnsClient;
