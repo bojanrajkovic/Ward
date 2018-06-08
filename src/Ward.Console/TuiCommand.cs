@@ -10,7 +10,6 @@ namespace Ward.Console
 {
     class TuiCommand : Command
     {
-
         IDnsClient dnsClient;
 
         public TuiCommand() : base("tui", "Curses-based terminal DNS UI.")
@@ -53,8 +52,13 @@ namespace Ward.Console
             }, 0) { X = queryLabel.X + queryLabel.Text.Length + 1, Y = 4 };
 
             TextView outputView = null;
-            var runQueryButton = new Button("Run Query") {
+            var quitButton = new Button("Quit") {
                 X = 3,
+                Y = 4 + dnsTypeRadio.RadioLabels.Length + 1,
+                Clicked = () => { top.Running = false; }
+            };
+            var runQueryButton = new Button("Run Query") {
+                X = Pos.Right(quitButton) + 4,
                 Y = 4 + dnsTypeRadio.RadioLabels.Length + 1,
                 Clicked = async () => {
                     try {
@@ -90,6 +94,7 @@ namespace Ward.Console
                 nameEntry,
                 queryLabel,
                 dnsTypeRadio,
+                quitButton,
                 runQueryButton,
                 outputView
             );
