@@ -1,8 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>ward</ToolCommandName>
+    <PackageId>ward-cli</PackageId>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
@@ -10,18 +14,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ward.DnsClient\Ward.DnsClient.csproj" />
+    <PackageReference Include="Terminal.Gui" Version="0.13.0" />
   </ItemGroup>
-  <Target Name="_BuildDotNetCoreToolPackage">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="Configuration=$(Configuration)" Targets="Restore;Build;Publish" />
-    <ItemGroup>
-      <JunkFiles Include="$(OutputPath)\*.deps.json" />
-      <JunkFiles Include="$(OutputPath)\*.runtimeconfig.dev.json" />
-      <NugetArguments Include="-Version $(PackageVersion)" />
-      <NugetArguments Include="-OutputDirectory _artifacts" />
-      <NugetArguments Include="-Properties" />
-      <NugetArguments Include="PublishDir=$(OutputPath)publish\" />
-    </ItemGroup>
-    <Delete Files="@(JunkFiles)" />
-    <Exec Command="nuget pack Ward.Console.nuspec @(NugetArguments, ' ')" />
-  </Target>
 </Project>

@@ -48,7 +48,7 @@ after_test:
           --commitMessage $env:APPVEYOR_REPO_COMMIT_MESSAGE --jobId $env:APPVEYOR_JOB_ID
       }
   - dotnet msbuild /t:Restore,Pack /p:PackageOutputPath=artifacts /p:Version="%GitVersion_NuGetVersion%"
-  - dotnet msbuild src\Ward.Console\Ward.Console.csproj /t:_BuildDotNetCoreToolPackage /p:Version="%GitVersion_NuGetVersion%"
+  - dotnet pack src\Ward.Console\Ward.Console.csproj /p:Version="%GitVersion_NuGetVersion%"
 artifacts:
   - path: "**\\artifacts\\**\\*.*"
   - path: "_artifacts\\**"

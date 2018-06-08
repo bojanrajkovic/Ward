@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Mono.Options;
 
@@ -19,6 +19,7 @@ namespace Ward.Console
             string.Empty,
             "Available commands:",
             new DigCommand(),
+            new TuiCommand()
         };
 
         static int Main(string[] args) => wardCommandSet.Run(args);
