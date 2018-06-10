@@ -38,7 +38,7 @@ namespace Ward.Dns.Records
         /// Creates an NS record.
         /// </summary>
         /// <param name="name">The owner-name (or label) to which this record belongs.</param>
-        /// <param name="class"The record class.</param>
+        /// <param name="class">The record class.</param>
         /// <param name="timeToLive">The record time to live.</param>
         /// <param name="hostname">
         /// A domain-name which specifies a host which should be authoritative
