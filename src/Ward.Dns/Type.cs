@@ -1,5 +1,8 @@
 namespace Ward.Dns
 {
+    /// <summary>
+    /// The DNS resource record type.
+    /// </summary>
     public enum Type : ushort
     {
         A = 1,
