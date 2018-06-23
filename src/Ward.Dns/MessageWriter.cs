@@ -16,11 +16,29 @@ using OptData = System.Collections.Generic.IEnumerable<(
 
 namespace Ward.Dns
 {
+    /// <summary>
+    /// Writes messages in the DNS wire format.
+    /// </summary>
     public class MessageWriter
     {
+        /// <summary>
+        /// The EDNS0 version supported.
+        /// </summary>
         const int edns0Version = 0;
+
+        /// <summary>
+        /// Does this client understand DNSSEC?
+        /// </summary>
         const bool dnsSecOk = false;
 
+        /// <summary>
+        /// Asynchronously serializes a DNS message
+        /// </summary>
+        /// <param name="m">The DNS message.</param>
+        /// <param name="writeOpt">Should we write the OPT pseudo-RR?</param>
+        /// <param name="udpPayloadSize">The UDP payload size to write into the OPT pseudo-RR.</param>
+        /// <param name="optData">Any additional data to include in the OPT pseudo-RR.</param>
+        /// <returns>The serialized message.</returns>
         public static async Task<byte[]> SerializeMessageAsync(
             Message m,
             bool writeOpt = false,
@@ -29,8 +47,10 @@ namespace Ward.Dns
         {
             writeOpt = writeOpt || (ushort)m.Header.ReturnCode > 15;
 
-            // Cheat and use a memory stream.
+            // Cheat and use a memory stream, for now.
             using (var s = new MemoryStream()) {
+                // This offset map will pass down along all the QNAME writes
+                // so that we can implement the QNAME compression scheme.
                 var offsetMap = new Dictionary<string, ushort>();
                 await WriteHeaderToStreamAsync(m.Header, writeOpt, s);
 
@@ -50,6 +70,13 @@ namespace Ward.Dns
             }
         }
 
+        /// <summary>
+        /// Writes the OPT pseudo-RR to the given stream.
+        /// </summary>
+        /// <param name="udpPayloadSize">UDP payload size to write.</param>
+        /// <param name="optData">Any additional data to include in the OPT pseudo-RR.</param>
+        /// <param name="header">The message header, which will be used to compute the extended RCODE bits.</param>
+        /// <param name="s">The stream to write the OPT pseudo-RR to.</param>
         internal static async Task WriteOptRecordToStreamAsync(
             ushort udpPayloadSize,
             OptData optData,
@@ -74,6 +101,7 @@ namespace Ward.Dns
             var remainingFlags = (dnsSecOk ? (ushort)(1 << 15) : (ushort)0);
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(remainingFlags)), 0, 2);
 
+            // Write all of the rdata.
             byte[] rdata;
             if (optData == null || optData.Count() == 0)
                 rdata = Array.Empty<byte>();
@@ -93,22 +121,42 @@ namespace Ward.Dns
             await s.WriteAsync(rdata, 0, rdata.Length);
         }
 
+        /// <summary>
+        /// Writes a DNS record <paramref name="r"/> to the stream <paramref name="s"/>.
+        /// </summary>
+        /// <param name="r">The record to write.</param>
+        /// <param name="s">The stream to write to.</param>
+        /// <param name="offsetMap">The offset map for implementing QNAME compression.</param>
         internal static async Task WriteRecordToStreamAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
         {
+            // Write the name, and add it to the offset map if it doesn't exist.
             var qname = Utils.WriteQName(r.Name, offsetMap);
             if (!string.IsNullOrWhiteSpace(r.Name) && !offsetMap.ContainsKey(r.Name))
                 offsetMap.Add(r.Name, (ushort)s.Position);
-
             await s.WriteAsync(qname, 0, qname.Length);
+
+            // Write the type, class, and TTL
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)r.Type)), 0, 2);
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)r.Class)), 0, 2);
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt32(r.TimeToLive)), 0, 4);
 
+            // Compute the record data and write its length and the data.
             var data = await GetDataForRecordAsync(r, s, offsetMap);
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)data.Length)), 0, 2);
             await s.WriteAsync(data.ToArray(), 0, data.Length);
         }
 
+        /// <summary>
+        /// Gets the RDATA for a given DNS record <paramref name="r"/>.
+        /// </summary>
+        /// <param name="r">The record for which to compute data.</param>
+        /// <param name="s">The stream to which the data will be written.</param>
+        /// <param name="offsetMap">The offset map for QNAME compression.</param>
+        /// <remarks>
+        /// This method needs the stream <paramref name="s"/> because it needs
+        /// to be able to compute where a QNAME will be written in the stream. See
+        /// the first switch entry for MX records.
+        /// </remarks>
         internal static async Task<byte[]> GetDataForRecordAsync(Record r, Stream s, Dictionary<string, ushort> offsetMap)
         {
             switch (r) {
@@ -178,6 +226,13 @@ namespace Ward.Dns
             }
         }
 
+        /// <summary>
+        /// Asynchronously writes a DNS question <paramref name="q"/> to the stream
+        /// <paramref name="s"/>.
+        /// </summary>
+        /// <param name="q">The question.</param>
+        /// <param name="s">The stream to write to.</param>
+        /// <param name="offsetMap">The offset map for QNAME compression.</param>
         static async Task WriteQuestionToStreamAsync(Question q, Stream s, Dictionary<string, ushort> offsetMap)
         {
             var qname = Utils.WriteQName(q.Name, offsetMap);
@@ -193,6 +248,13 @@ namespace Ward.Dns
             await s.WriteAsync(@class, 0, 2);
         }
 
+        /// <summary>
+        /// Asynchronously writes the header <paramref name="h"/> to the stream
+        /// <paramref name="s"/>.
+        /// </summary>
+        /// <param name="h">The header to write to the stream.</param>
+        /// <param name="writeOpt">Whether we'll be writing the OPT pseudo-RR or not.</param>
+        /// <param name="s">The stream to which to write.</param>
         static async Task WriteHeaderToStreamAsync(Header h, bool writeOpt, Stream s)
         {
             await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(h.Id)), 0, 2);
