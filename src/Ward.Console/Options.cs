@@ -274,7 +274,7 @@ namespace Mono.Options
         }
     }
 
-    public class OptionValueCollection : IList, IList<string>
+    class OptionValueCollection : IList, IList<string>
     {
 
         List<string> values = new List<string>();
@@ -365,7 +365,7 @@ namespace Mono.Options
         }
     }
 
-    public class OptionContext
+    class OptionContext
     {
         private Option option;
         private string name;
@@ -695,7 +695,7 @@ namespace Mono.Options
     }
 
 #if !PCL || NETSTANDARD1_3
-    public class ResponseFileSource : ArgumentSource
+    class ResponseFileSource : ArgumentSource
     {
 
         public override string[] GetNames()
@@ -722,7 +722,7 @@ namespace Mono.Options
 #if !PCL
     [Serializable]
 #endif
-    public class OptionException : Exception
+    class OptionException : Exception
     {
         private string option;
 
@@ -768,7 +768,7 @@ namespace Mono.Options
 
     public delegate void OptionAction<TKey, TValue>(TKey key, TValue value);
 
-    public class OptionSet : KeyedCollection<string, Option>
+    class OptionSet : KeyedCollection<string, Option>
     {
         public OptionSet()
             : this(null)
@@ -1468,7 +1468,7 @@ namespace Mono.Options
         }
     }
 
-    public class Command
+    class Command
     {
         public string Name { get; }
         public string Help { get; }
@@ -1597,7 +1597,7 @@ namespace Mono.Options
         }
     }
 
-    public class CommandSet : KeyedCollection<string, Command>
+    class CommandSet : KeyedCollection<string, Command>
     {
         readonly string suite;
 
@@ -1874,7 +1874,7 @@ namespace Mono.Options
         }
     }
 
-    public class HelpCommand : Command
+    class HelpCommand : Command
     {
         public HelpCommand()
             : base("help", help: "Show this message and exit")
