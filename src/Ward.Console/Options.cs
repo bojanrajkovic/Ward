@@ -403,14 +403,14 @@ namespace Mono.Options
         }
     }
 
-    public enum OptionValueType
+    enum OptionValueType
     {
         None,
         Optional,
         Required,
     }
 
-    public abstract class Option
+    abstract class Option
     {
         string prototype, description;
         string[] names;
@@ -628,7 +628,7 @@ namespace Mono.Options
         }
     }
 
-    public abstract class ArgumentSource
+    abstract class ArgumentSource
     {
 
         protected ArgumentSource()
@@ -766,7 +766,7 @@ namespace Mono.Options
 #endif
     }
 
-    public delegate void OptionAction<TKey, TValue>(TKey key, TValue value);
+    delegate void OptionAction<TKey, TValue>(TKey key, TValue value);
 
     class OptionSet : KeyedCollection<string, Option>
     {
