@@ -18,7 +18,7 @@ namespace Ward.DnsClient.Tests
             Assert.NotNull(resolve);
             Assert.Single(resolve.Answers);
             Assert.Empty(resolve.Authority);
-            Assert.Empty(resolve.Additional);
+            Assert.Single(resolve.Additional, record => record is OptRecord);
             Assert.Single(resolve.Questions);
             Assert.True(resolve.MessageSize > 0);
 
@@ -36,7 +36,7 @@ namespace Ward.DnsClient.Tests
             Assert.NotNull(resolve);
             Assert.Single(resolve.Answers);
             Assert.Empty(resolve.Authority);
-            Assert.Empty(resolve.Additional);
+            Assert.Single(resolve.Additional, record => record is OptRecord);
             Assert.Single(resolve.Questions);
             Assert.True(resolve.MessageSize > 0);
 
