@@ -1,5 +1,8 @@
 namespace Ward.Dns
 {
+    /// <summary>
+    /// The DNS header opcode.
+    /// </summary>
     public enum Opcode : byte
     {
         Query = 0,
