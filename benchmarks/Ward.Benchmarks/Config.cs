@@ -14,7 +14,7 @@ namespace Ward.Benchmarks
         {
             var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-            Add(Job.Default.With(CsProjCoreToolchain.NetCoreApp20));
+            Add(Job.Default.With(CsProjCoreToolchain.NetCoreApp21));
 
             if (isWindows)
                 Add(Job.Default.With(CsProjClassicNetToolchain.Net461));
