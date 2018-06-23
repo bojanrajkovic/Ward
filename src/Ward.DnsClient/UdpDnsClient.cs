@@ -10,20 +10,45 @@ using Ward.Dns.Records;
 
 namespace Ward.DnsClient
 {
+    /// <summary>
+    /// A standard UDP DNS client.
+    /// </summary>
+    /// <seealso cref="Ward.DnsClient.IDnsClient" />
     public class UdpDnsClient : IDnsClient
     {
         readonly UdpClient client;
         readonly SemaphoreSlim semaphore = new SemaphoreSlim(1);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UdpDnsClient"/> class.
+        /// </summary>
+        /// <param name="serverHost">The server host.</param>
+        /// <param name="serverPort">The server port.</param>
         public UdpDnsClient(string serverHost, ushort serverPort)
         {
             client = new UdpClient();
             client.Connect(serverHost, serverPort);
         }
 
+        /// <summary>
+        /// Asynchronously resolves the given question.
+        /// </summary>
+        /// <param name="question">The question to resolve.</param>
+        /// <param name="cancellationToken">A cancellation token for the operation.</param>
+        /// <returns>
+        /// A DNS resolve result.
+        /// </returns>
         public Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default) =>
             ResolveAsync(new[] { question }, cancellationToken);
 
+        /// <summary>
+        /// Resolves all of the given questions.
+        /// </summary>
+        /// <param name="questions">The list of questions.</param>
+        /// <param name="cancellationToken">A cancellation token for the operation.</param>
+        /// <returns>
+        /// A DNS resolve result for all the questions.
+        /// </returns>
         public async Task<IResolveResult> ResolveAsync(IEnumerable<Question> questions, CancellationToken cancellationToken = default)
         {
             if (questions.Count() > ushort.MaxValue)
@@ -64,6 +89,17 @@ namespace Ward.DnsClient
             return new ResolveResult(response, recvResult.Buffer.Length);
         }
 
+        /// <summary>
+        /// Asynchronously looks up the <paramref name="type" /> record in the
+        /// given <paramref name="class" /> for the <paramref name="host" />.
+        /// </summary>
+        /// <param name="host">The host to resolve.</param>
+        /// <param name="type">The record type to resolve.</param>
+        /// <param name="class">The record class to resolve.</param>
+        /// <param name="cancellationToken">A cancellation token for the operation.</param>
+        /// <returns>
+        /// A DNS resolve result.
+        /// </returns>
         public Task<IResolveResult> ResolveAsync(string host, Dns.Type type, Class @class, CancellationToken cancellationToken = default) =>
             ResolveAsync(new Question(host, type, @class), cancellationToken);
     }
