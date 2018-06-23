@@ -15,6 +15,9 @@ using Type = Ward.Dns.Type;
 
 namespace Ward.DnsClient
 {
+    /// <summary>
+    /// A DNS-over-HTTPS client.
+    /// </summary>
     public class HttpsDnsClient : IDnsClient
     {
         const int MaxConnections = 10;
@@ -27,6 +30,13 @@ namespace Ward.DnsClient
         readonly string expectedSpkiPin;
         readonly HttpClient httpClient;
 
+        /// <summary>
+        /// Creates a new <see cref="HttpsDnsClient"/>.
+        /// </summary>
+        /// <param name="host">The server host.</param>
+        /// <param name="port">The server port.</param>
+        /// <param name="tlsHost">The hostname to use for TLS.</param>
+        /// <param name="expectedSpkiPin">The expected SPKI hash of the server certificate.</param>
         public HttpsDnsClient(string host, ushort port, string tlsHost, string expectedSpkiPin = null)
         {
             this.host = host;
@@ -49,19 +59,26 @@ namespace Ward.DnsClient
             }
         }
 
+        /// <summary>
+        /// Checks if the given server certificate matches the expected SPKI hash.
+        /// </summary>
+        /// <param name="req">The HTTP request.</param>
+        /// <param name="cert">The server certificate.</param>
+        /// <param name="chain">The certificate chain.</param>
+        /// <param name="policyErrors">Any policy errors in validation of the certificate</param>
+        /// <returns></returns>
         bool CheckServerCertificateMatchesExpectedHash(
             HttpRequestMessage req,
             X509Certificate2 cert,
             X509Chain chain,
             SslPolicyErrors policyErrors
-        )
-        {
-            return policyErrors == SslPolicyErrors.None && cert.GetSpkiPinHash() == expectedSpkiPin;
-        }
+        ) => policyErrors == SslPolicyErrors.None && cert.GetSpkiPinHash() == expectedSpkiPin;
 
+        /// <inheritdoc />
         public Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default) =>
             ResolveAsync(new[] { question }, cancellationToken);
 
+        /// <inheritdoc />
         public async Task<IResolveResult> ResolveAsync(IEnumerable<Question> questions, CancellationToken cancellationToken = default)
         {
             if (questions.Count() > ushort.MaxValue)
@@ -95,6 +112,7 @@ namespace Ward.DnsClient
             return new ResolveResult(result, content.Length);
         }
 
+        /// <inheritdoc />
         public Task<IResolveResult> ResolveAsync(string host, Type type, Class @class, CancellationToken cancellationToken = default) =>
             ResolveAsync(new Question(host, type, @class), cancellationToken);
     }
