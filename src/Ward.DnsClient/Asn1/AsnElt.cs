@@ -36,7 +36,7 @@ namespace Asn1 {
  * immutable.
  */
 
-public class AsnElt {
+class AsnElt {
 
 	/*
 	 * Universal tag values.

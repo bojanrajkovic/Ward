@@ -29,7 +29,7 @@ using System.IO;
 
 namespace Asn1 {
 
-public class AsnException : IOException {
+class AsnException : IOException {
 
     public AsnException(string message)
         : base(message)
