@@ -2,6 +2,9 @@ using System.ComponentModel;
 
 namespace Ward.Dns
 {
+    /// <summary>
+    /// A DNS return code.
+    /// </summary>
     public enum ReturnCode : ushort
     {
         [Description("The request completed successfully.")]
