@@ -31,7 +31,7 @@ namespace Ward.DnsClient
         Task<IResolveResult> ResolveAsync(string host, Type type, Class @class, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Resolves all of the given questions.
+        /// Asynchronously resolves all of the given questions.
         /// </summary>
         /// <param name="questions">The list of questions.</param>
         /// <param name="cancellationToken">A cancellation token for the operation.</param>

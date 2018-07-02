@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Security;
@@ -75,25 +74,11 @@ namespace Ward.DnsClient
             SslPolicyErrors policyErrors
         ) => policyErrors == SslPolicyErrors.None && cert.GetSpkiPinHash() == expectedSpkiPin;
 
-        /// <summary>
-        /// Asynchronously resolves the given question.
-        /// </summary>
-        /// <param name="question">The question to resolve.</param>
-        /// <param name="cancellationToken">A cancellation token for the operation.</param>
-        /// <returns>
-        /// A DNS resolve result.
-        /// </returns>
+        /// <inheritdoc />
         public Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default) =>
-            ResolveAsync(new[] { question }, cancellationToken);
+                    ResolveAsync(new[] { question }, cancellationToken);
 
-        /// <summary>
-        /// Resolves all of the given questions.
-        /// </summary>
-        /// <param name="questions">The list of questions.</param>
-        /// <param name="cancellationToken">A cancellation token for the operation.</param>
-        /// <returns>
-        /// A DNS resolve result for all the questions.
-        /// </returns>
+        /// <inheritdoc />
         public async Task<IResolveResult> ResolveAsync(IEnumerable<Question> questions, CancellationToken cancellationToken = default)
         {
             if (questions.Count() > ushort.MaxValue)
@@ -127,17 +112,7 @@ namespace Ward.DnsClient
             return new ResolveResult(result, content.Length);
         }
 
-        /// <summary>
-        /// Asynchronously looks up the <paramref name="type" /> record in the
-        /// given <paramref name="class" /> for the <paramref name="host" />.
-        /// </summary>
-        /// <param name="host">The host to resolve.</param>
-        /// <param name="type">The record type to resolve.</param>
-        /// <param name="class">The record class to resolve.</param>
-        /// <param name="cancellationToken">A cancellation token for the operation.</param>
-        /// <returns>
-        /// A DNS resolve result.
-        /// </returns>
+        /// <inheritdoc />
         public Task<IResolveResult> ResolveAsync(string host, Type type, Class @class, CancellationToken cancellationToken = default) =>
             ResolveAsync(new Question(host, type, @class), cancellationToken);
     }

@@ -7,57 +7,27 @@ namespace Ward.DnsClient
     /// <summary>
     /// A DNS resolve result.
     /// </summary>
-    /// <seealso cref="Ward.DnsClient.IResolveResult" />
+    /// <seealso cref="IResolveResult" />
     public class ResolveResult : IResolveResult
     {
         readonly Message message;
 
-        /// <summary>
-        /// Gets the size of the message.
-        /// </summary>
-        /// <value>
-        /// The size of the message.
-        /// </value>
+        /// <inheritdoc />
         public int MessageSize { get; }
 
-        /// <summary>
-        /// Gets the header.
-        /// </summary>
-        /// <value>
-        /// The header.
-        /// </value>
+        /// <inheritdoc />
         public Header Header => message.Header;
 
-        /// <summary>
-        /// Gets the answers.
-        /// </summary>
-        /// <value>
-        /// The answers.
-        /// </value>
+        /// <inheritdoc />
         public ImmutableList<Record> Answers => message.Answers;
 
-        /// <summary>
-        /// Gets the authoritative servers.
-        /// </summary>
-        /// <value>
-        /// The authoritative servers.
-        /// </value>
+        /// <inheritdoc />
         public ImmutableList<Record> Authority => message.Authority;
 
-        /// <summary>
-        /// Gets the additional records.
-        /// </summary>
-        /// <value>
-        /// The additional records.
-        /// </value>
+        /// <inheritdoc />
         public ImmutableList<Record> Additional => message.Additional;
 
-        /// <summary>
-        /// Gets the questions.
-        /// </summary>
-        /// <value>
-        /// The questions.
-        /// </value>
+        /// <inheritdoc />
         public ImmutableList<Question> Questions => message.Questions;
 
         /// <summary>
