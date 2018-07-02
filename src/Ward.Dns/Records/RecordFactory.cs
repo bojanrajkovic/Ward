@@ -18,7 +18,7 @@ namespace Ward.Dns.Records
                 case Type.AAAA:
                     return new AddressRecord(name, type, @class, ttl, length, data);
                 case Type.MX:
-                    return new MailExchangerRecord(name, type, @class, ttl, length, data, message);
+                    return new MailExchangerRecord(name, @class, ttl, length, data, message);
                 case Type.CAA:
                     return new CaaRecord(name, @class, ttl, length, data);
                 case Type.CNAME:

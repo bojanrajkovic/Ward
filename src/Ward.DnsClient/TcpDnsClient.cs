@@ -17,6 +17,10 @@ using Type = Ward.Dns.Type;
 
 namespace Ward.DnsClient
 {
+    /// <summary>
+    /// A TCP DNS client.
+    /// </summary>
+    /// <seealso cref="IDnsClient" />
     public class TcpDnsClient : IDnsClient
     {
         static readonly ArrayPool<byte> BufferPool = ArrayPool<byte>.Shared;
@@ -30,8 +34,23 @@ namespace Ward.DnsClient
         readonly TcpClient tcpClient;
         Stream stream;
 
+        /// <summary>
+        /// Gets the connect timeout.
+        /// </summary>
+        /// <value>
+        /// The connect timeout.
+        /// </value>
         public TimeSpan ConnectTimeout { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TcpDnsClient"/> class.
+        /// </summary>
+        /// <param name="host">The DNS server host.</param>
+        /// <param name="port">The DNS server port.</param>
+        /// <param name="tls">If set to <c>true</c>, initiate a TLS connection.</param>
+        /// <param name="tlsHost">The TLS host.</param>
+        /// <param name="expectedSpkiPin">The expected SPKI pin.</param>
+        /// <param name="connectTimeout">The connection timeout.</param>
         public TcpDnsClient(string host, ushort port, bool tls, string tlsHost = "", string expectedSpkiPin = "", int connectTimeout = 5000)
         {
             this.host = host;
@@ -44,6 +63,21 @@ namespace Ward.DnsClient
             ConnectTimeout = TimeSpan.FromMilliseconds(connectTimeout);
         }
 
+        /// <summary>
+        /// Asynchronously connect to the server..
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The connected stream, ready for use.</returns>
+        /// <exception cref="TimeoutException">
+        /// If the connection timeout elapses without the connection having
+        /// been established.
+        /// </exception>
+        /// <exception cref="Exception">
+        /// If the client fails to connect for some unknown reason.
+        /// </exception>
+        /// <exception cref="SecurityException">
+        /// If there is an error establishing a secure connection.
+        /// </exception>
         async Task<Stream> ConnectAsync(CancellationToken cancellationToken)
         {
             if (tcpClient.Connected)
@@ -95,9 +129,11 @@ namespace Ward.DnsClient
             return stream;
         }
 
+        /// <inheritdoc />
         public Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default) =>
             ResolveAsync(new[] { question }, cancellationToken);
 
+        /// <inheritdoc />
         public async Task<IResolveResult> ResolveAsync(IEnumerable<Question> questions, CancellationToken cancellationToken = default)
         {
             if (questions.Count() > ushort.MaxValue)
@@ -142,6 +178,7 @@ namespace Ward.DnsClient
             return result;
         }
 
+        /// <inheritdoc />
         public Task<IResolveResult> ResolveAsync(string host, Type type, Class @class, CancellationToken cancellationToken = default) =>
             ResolveAsync(new Question(host, type, @class), cancellationToken);
     }

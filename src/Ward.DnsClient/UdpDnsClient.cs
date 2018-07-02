@@ -6,24 +6,34 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Ward.Dns;
-using Ward.Dns.Records;
 
 namespace Ward.DnsClient
 {
+    /// <summary>
+    /// A standard UDP DNS client.
+    /// </summary>
+    /// <seealso cref="IDnsClient" />
     public class UdpDnsClient : IDnsClient
     {
         readonly UdpClient client;
         readonly SemaphoreSlim semaphore = new SemaphoreSlim(1);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UdpDnsClient"/> class.
+        /// </summary>
+        /// <param name="serverHost">The server host.</param>
+        /// <param name="serverPort">The server port.</param>
         public UdpDnsClient(string serverHost, ushort serverPort)
         {
             client = new UdpClient();
             client.Connect(serverHost, serverPort);
         }
 
+        /// <inheritdoc />
         public Task<IResolveResult> ResolveAsync(Question question, CancellationToken cancellationToken = default) =>
             ResolveAsync(new[] { question }, cancellationToken);
 
+        /// <inheritdoc />
         public async Task<IResolveResult> ResolveAsync(IEnumerable<Question> questions, CancellationToken cancellationToken = default)
         {
             if (questions.Count() > ushort.MaxValue)
@@ -64,6 +74,7 @@ namespace Ward.DnsClient
             return new ResolveResult(response, recvResult.Buffer.Length);
         }
 
+        /// <inheritdoc />
         public Task<IResolveResult> ResolveAsync(string host, Dns.Type type, Class @class, CancellationToken cancellationToken = default) =>
             ResolveAsync(new Question(host, type, @class), cancellationToken);
     }

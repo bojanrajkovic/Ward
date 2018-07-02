@@ -7,13 +7,25 @@ using System.Text;
 
 namespace Ward.Dns
 {
+    /// <summary>
+    /// DNS utilities.
+    /// </summary>
     static class Utils
     {
-        // To make life easier, ParseComplexName can update the offset
-        // on its own. It's non-trivial to track for callers. Some callers
-        // may not know the offset in the message, in which case they should
-        // specify a non-null data array, and a 0 offset. Pointers will *always*
-        // be looked up in the message, regardless of the specified offset.
+        /// <summary>
+        /// Parses an encoded DNS QNAME.
+        /// </summary>
+        /// <param name="message">The whole message being parsed.</param>
+        /// <param name="data">The data subset to parse the QNAME from, if parsing from a subset.</param>
+        /// <param name="offset">The offset at which to start parsing.</param>
+        /// <returns>A parsed name.</returns>
+        /// <remarks>
+        /// To make life easier, <see cref="ParseComplexName"/> can update the offset
+        /// on its own. It's non-trivial to track for callers. Some callers
+        /// may not know the offset in the message, in which case they should
+        /// specify a non-null data array, and a 0 offset. Pointers will *always*
+        /// be looked up in the message, regardless of the specified offset.
+        /// </remarks>
         public static string ParseComplexName(byte[] message, byte[] data, ref int offset)
         {
             var readFrom = data ?? message;
@@ -49,6 +61,16 @@ namespace Ward.Dns
             return nameBuilder.ToString();
         }
 
+        /// <summary>
+        /// Writes an encoded QNAME to a byte[].
+        /// </summary>
+        /// <param name="name">The name to write.</param>
+        /// <param name="offsetMap">The offset map to use for compressing the QNAME.</param>
+        /// <returns>An encoded/compressed name.</returns>
+        /// <remarks>
+        /// Any names passed into WriteQName will be punycoded if need be, via the
+        /// <see cref="System.Globalization.IdnMapping"/> class.
+        /// <remarks>
         public static byte[] WriteQName(string name, Dictionary<string, ushort> offsetMap)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -106,6 +128,12 @@ namespace Ward.Dns
             return qname;
         }
 
+        /// <summary>
+        /// Efficiently concatenates an unbounded number of arrays via
+        /// Buffer.BlockCopy.
+        /// </summary>
+        /// <param name="arrays">The arrays to concatenate.</param>
+        /// <returns>A concatenated array consisting of all the input arrays.</returns>
         public static byte[] Concat(params byte[][] arrays)
         {
             var final = new byte[arrays.Sum(a => a.Length)];
@@ -117,9 +145,19 @@ namespace Ward.Dns
             return final;
         }
 
+        /// <summary>
+        /// Swaps the endianness of a <see cref="System.UInt16"/>.
+        /// </summary>
+        /// <param name="x">The unsigned 16-bit integer whose endianness to swap.</param>
+        /// <returns>The unsigned 16-bit integer <paramref name="x"/> with its endianness swapped.</returns>
         public static ushort SwapUInt16(ushort x) =>
             BitConverter.IsLittleEndian ? (ushort)((ushort)((x & 0xff) << 8) | ((x >> 8) & 0xff)) : x;
 
+        /// <summary>
+        /// Swaps the endianness of a <see cref="System.UInt32"/>.
+        /// </summary>
+        /// <param name="x">The unsigned 32-bit integer whose endianness to swap.</param>
+        /// <returns>The unsigned 32-bit integer <paramref name="x"/> with its endianness swapped.</returns>
         public static uint SwapUInt32(uint x) =>
             BitConverter.IsLittleEndian ? ((x & 0x000000ff) << 24) +
                                           ((x & 0x0000ff00) << 8) +
