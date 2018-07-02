@@ -1,11 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-
-using Ward.Dns.Records;
-using static Ward.Dns.Utils;
 
 namespace Ward.Dns
 {
@@ -15,33 +8,51 @@ namespace Ward.Dns
     public class Record
     {
         /// <summary>
-        /// The owner-name or label to which this record belongs.
+        /// Gets the owner-name or label to which this record belongs.
         /// </summary>
+        /// <value>
+        /// The owner-name or label to which this record belongs.
+        /// </value>
         public string Name { get; }
 
         /// <summary>
-        /// The resource record type.
+        /// Gets the resource record type.
         /// </summary>
+        /// <value>
+        /// The resource record type.
+        /// </value>
         public Type Type { get; }
 
         /// <summary>
-        /// The resource record class.
+        /// Gets the resource record class.
         /// </summary>
+        /// <value>
+        /// The resource record class.
+        /// </value>
         public Class Class { get; }
 
         /// <summary>
-        /// The resource record time to live, in seconds.
+        /// Gets the resource record time to live.
         /// </summary>
+        /// <value>
+        /// The resource record time to live.
+        /// </value>
         public uint TimeToLive { get; }
 
         /// <summary>
-        /// The lenth of the resource record data.
+        /// Gets the lenth of the resource record data.
         /// </summary>
+        /// <value>
+        /// The length of the resource record data.
+        /// </value>
         public ushort Length { get; }
 
         /// <summary>
-        /// The resource record-specific data.
+        /// Gets the resource record-specific data.
         /// </summary>
+        /// <value>
+        /// The resource record-specific data.
+        /// </value>
         public ReadOnlyMemory<byte> Data { get; }
 
         /// <summary>
@@ -60,7 +71,8 @@ namespace Ward.Dns
             uint timeToLive,
             ushort length,
             ReadOnlyMemory<byte> data
-        ) {
+        )
+        {
             Name = name;
             Type = type;
             Class = @class;

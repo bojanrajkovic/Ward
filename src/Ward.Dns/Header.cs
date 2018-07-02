@@ -18,7 +18,7 @@ namespace Ward.Dns
         public readonly struct HeaderFlags
         {
             /// <summary>
-            /// A flag indicating whether this message is a query or a response.
+            /// Gets a value indicating whether this message is a query or a response.
             /// </summary>
             /// <returns>
             /// <c>true</c> if this is a query, <c>false</c> otherwise.
@@ -26,7 +26,7 @@ namespace Ward.Dns
             public bool Query { get; }
 
             /// <summary>
-            /// A flag indicating whether this is an authoritative answer.
+            /// Gets a value indicating whether this is an authoritative answer.
             /// </summary>
             /// <returns>
             /// <c>true</c> if the answer is authoritatie, <c>false</c> othrewise.
@@ -34,7 +34,7 @@ namespace Ward.Dns
             public bool Authoritative { get; }
 
             /// <summary>
-            /// A flag indicating whether this response was truncated.
+            /// Gets a value indicating whether this response was truncated.
             /// </summary>
             /// <returns>
             /// <c>true</c> if the response was truncated, <c>false</c> otherwise.
@@ -42,8 +42,11 @@ namespace Ward.Dns
             public bool Truncated { get; }
 
             /// <summary>
-            /// Pursue queries recursively. Valid in queries, copied into the response.
+            /// Gets a value indicating whenther the server should pursue queries recursively.
             /// </summary>
+            /// <remarks>
+            /// Valid in queries, copied into the response.
+            /// </remarks>
             /// <returns>
             /// <c>true</c> if the server should pursue the query recursively.
             /// <c>false</c> if the server should not recurse. Recursion support
@@ -52,7 +55,7 @@ namespace Ward.Dns
             public bool Recurse { get; }
 
             /// <summary>
-            /// Denotes whether recursive query support is enabled in the DNS server.
+            /// Gets a value indicating whether recursive query support is enabled in the DNS server.
             /// </summary>
             /// <returns>
             /// <c>true</c> if the server supports recursion, <c>false</c> otherwise.
@@ -60,7 +63,7 @@ namespace Ward.Dns
             public bool RecursionAvailable { get; }
 
             /// <summary>
-            /// A reserved flag value.
+            /// Gets the reserved flag's value.
             /// </summary>
             /// <returns>
             /// The reserved flag's value.
@@ -68,7 +71,7 @@ namespace Ward.Dns
             public bool Z { get; }
 
             /// <summary>
-            /// Indicates that the data included has been verified by the
+            /// Gets a value indicating that the data included has been verified by the
             /// server providing it. Only relevant in DNSSEC scenarios.
             /// </summary>
             /// <returns>
@@ -80,7 +83,7 @@ namespace Ward.Dns
             public bool Authenticated { get; }
 
             /// <summary>
-            /// In a query, indicates that non-authenticated data is acceptable
+            /// Gets a value indicating that non-authenticated data is acceptable
             /// to the resolver sending the query.
             /// </summary>
             /// <returns>
@@ -159,50 +162,50 @@ namespace Ward.Dns
         static readonly Random idRand = new Random();
 
         /// <summary>
-        /// The ID of this message. Used to match up requests/responses by clients.
+        /// Gets the ID of this message. Used to match up requests/responses by clients.
         /// </summary>
         /// <returns>The message ID.</returns>
         public ushort Id { get; }
 
         /// <summary>
-        /// Specifies the kind of query in this message.
+        /// Gets the kind of query in this message.
         /// </summary>
         /// <returns>The kind of query in this message.</returns>
         public Opcode Opcode { get; }
 
         /// <summary>
-        /// A set of header flags indicating various aspects of the message state.
+        /// Gets a set of header flags indicating various aspects of the message state.
         /// </summary>
         /// <returns>The header flags.</returns>
         public HeaderFlags Flags { get; }
 
         /// <summary>
-        /// The response code. Set to <see cref="ReturnCode.NoError" />
+        /// Gets the response code. Set to <see cref="ReturnCode.NoError" />
         /// for queries.
         /// </summary>
         /// <returns>A return/response code for the message.</returns>
         public ReturnCode ReturnCode { get; }
 
         /// <summary>
-        /// A counter for the number of entries in the question section.
+        /// Gets a counter for the number of entries in the question section.
         /// </summary>
         /// <returns>The number of entries in the question section.</returns>
         public ushort TotalQuestions { get; }
 
         /// <summary>
-        /// A counter for the number of entries in the answer section.
+        /// Gets a counter for the number of entries in the answer section.
         /// </summary>
         /// <returns>The number of entries in the answer section.</returns>
         public ushort TotalAnswerRecords { get; }
 
         /// <summary>
-        /// A counter for the number of entries in the authority section.
+        /// Gets a counter for the number of entries in the authority section.
         /// </summary>
         /// <returns>The number of entries in the authority section.</returns>
         public ushort TotalAuthorityRecords { get; }
 
         /// <summary>
-        /// A counter for the number of entries in the additional section.
+        /// Gets a counter for the number of entries in the additional section.
         /// </summary>
         /// <returns>The number of entries in the additional section.</returns>
         public ushort TotalAdditionalRecords { get; }

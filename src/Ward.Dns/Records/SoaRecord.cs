@@ -1,63 +1,80 @@
 using System;
-using System.IO;
 using System.Net;
-using static Ward.Dns.Utils;
 
 namespace Ward.Dns.Records
 {
     /// <summary>
     /// A SOA record.
     /// </summary>
+    /// <seealso cref="Record" />
     public class SoaRecord : Record
     {
         /// <summary>
-        /// The domain-name of the name server that was the original or
+        /// Gets the domain-name of the name server that was the original or
         /// primary source of data for this zone.
         /// </summary>
-        /// <returns>A domain-name.</returns>
+        /// <returns>
+        /// The domain-name of the name server that was the original or
+        /// primary source of data for this zone.
+        /// </returns>
         public string PrimaryNameServer { get; }
 
         /// <summary>
-        /// A domain-name which specifies the mailbox of the person responsible
+        /// Gets a domain-name which specifies the mailbox of the person responsible
         /// for this zone.
         /// </summary>
-        /// <returns>A domain-name.</returns>
+        /// <returns>
+        /// A domain-name which specifies the mailbox of the person responsible for this zone.
+        /// </returns>
         public string ResponsibleName { get; }
 
         /// <summary>
-        /// The unsigned 32-bit version number of the original copy of
+        /// Gets the unsigned 32-bit version number of the original copy of
         /// the zone. Zone transfers preserve this value. This value wraps
         /// around and should be compared using sequence space arithmetic.
         /// </summary>
-        /// <returns>The zone version number.</returns>
+        /// <returns>
+        /// The unsigned 32-bit version number of the original copy of the zone.
+        /// Zone transfers preserve this value. This value wraps around and should be
+        /// compared using sequence space arithmetic.
+        /// </returns>
         public uint Serial { get; }
 
         /// <summary>
-        /// A 32-bit time interval before the zone should be refreshed.
+        /// Gets the 32-bit time interval before the zone should be refreshed.
         /// </summary>
-        /// <returns>The zone refresh time.</returns>
+        /// <returns>The 32-bit time interval before the zone should be refreshed.</returns>
         public int Refresh { get; }
 
         /// <summary>
-        /// A 32-bit time interval that should elapse before a failed
+        /// Gets the 32-bit time interval that should elapse before a failed
         /// refresh should be retried.
         /// </summary>
-        /// <returns>The refresh retry time.</returns>
+        /// <returns>
+        /// The 32-bit time interval that should elapse before a failed refresh
+        /// should be retried.
+        /// </returns>
         public int Retry { get; }
 
         /// <summary>
-        /// A 32 bit time value that specifies the upper limit on
+        /// Gets a 32-bit time value that specifies the upper limit on
         /// the time interval that can elapse before the zone is no
         /// longer authoritative.
         /// </summary>
-        /// <returns>The authoritative interval.</returns>
+        /// <returns>
+        /// A 32-bit time value that specifies the upper limit on the time
+        /// interval that can elapse before the zone is no longer authoritative.
+        /// </returns>
         public int Expire { get; }
 
         /// <summary>
-        /// The unsigned 32-bit minimum TTL field that should be
+        /// Gets the unsigned 32-bit minimum TTL field that should be
         /// exported with any RR from this zone.
         /// </summary>
-        /// <returns>The minimum TTL for RRs from this zone.</returns>
+        /// <returns>
+        /// The unsigned 32-bit minimum TTL field that should be exported
+        /// with any RR from this zone.
+        /// </returns>
         public uint MinimumTtl { get; }
 
         /// <summary>
@@ -73,7 +90,7 @@ namespace Ward.Dns.Records
             ushort length,
             ReadOnlyMemory<byte> data,
             byte[] message
-        ) : base(name, Dns.Type.SOA, @class, timeToLive, length, data) {
+        ) : base(name, Type.SOA, @class, timeToLive, length, data) {
             var dataArray = data.ToArray();
             var offset = 0;
             PrimaryNameServer = Utils.ParseComplexName(message, dataArray, ref offset);
@@ -113,7 +130,7 @@ namespace Ward.Dns.Records
             int retry,
             int expire,
             uint minimumTtl
-        ) : base(name, Dns.Type.SOA, @class, timeToLive, 0, Array.Empty<byte>()) {
+        ) : base(name, Type.SOA, @class, timeToLive, 0, Array.Empty<byte>()) {
             PrimaryNameServer = primaryNameServer;
             ResponsibleName = responsibleName;
             Serial = serial;
@@ -123,10 +140,7 @@ namespace Ward.Dns.Records
             MinimumTtl = minimumTtl;
         }
 
-        /// <summary>
-        /// Converts the current record to a string.
-        /// </summary>
-        /// <returns>A string version of the current record.</returns>
+        /// <inheritdoc />
         [System.Diagnostics.DebuggerStepThrough]
         public override string ToString() =>
             $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{PrimaryNameServer} {ResponsibleName} " +

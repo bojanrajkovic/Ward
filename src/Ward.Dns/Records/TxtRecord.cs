@@ -1,8 +1,6 @@
 using System;
 using System.Text;
 
-using static Ward.Dns.Utils;
-
 namespace Ward.Dns.Records
 {
     /// <summary>
@@ -11,7 +9,7 @@ namespace Ward.Dns.Records
     public class TxtRecord : Record
     {
         /// <summary>
-        /// The data in this record.
+        /// Gets the data in this record.
         /// </summary>
         /// <returns>The data in this record.</returns>
         public string TextData { get; }
@@ -28,7 +26,7 @@ namespace Ward.Dns.Records
             uint timeToLive,
             ushort length,
             ReadOnlyMemory<byte> data
-        ) : base(name, Dns.Type.TXT, @class, timeToLive, length, data) {
+        ) : base(name, Type.TXT, @class, timeToLive, length, data) {
             using (var pin = data.Pin())
                 TextData = Encoding.ASCII.GetString((byte*)pin.Pointer + 1, *((byte*)pin.Pointer));
         }
@@ -47,7 +45,7 @@ namespace Ward.Dns.Records
             string textData
         ) : base(
             name,
-            Dns.Type.TXT,
+            Type.TXT,
             @class,
             timeToLive,
             (ushort)(1+Encoding.ASCII.GetByteCount(textData)),

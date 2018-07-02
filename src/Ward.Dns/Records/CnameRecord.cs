@@ -7,15 +7,26 @@ namespace Ward.Dns.Records
     /// <summary>
     /// A CNAME record.
     /// </summary>
+    /// <seealso cref="Record" />
     public class CnameRecord : Record
     {
-        /// <summary>The canonical or primary name for the owner.</summary>
-        /// <returns>The canonical or primary name for the owner.</returns>
+        /// <summary>
+        /// Gets the canonical or primary name for the owner.
+        /// </summary>
+        /// <value>
+        /// The canonical or primary name for the owner.
+        /// </value>
         public string Hostname { get; }
 
         /// <summary>
         /// Creates a CNAME record.
         /// </summary>
+        /// <param name="name">The owner-name or label to which this record belongs.</param>
+        /// <param name="class">The resource record class.</param>
+        /// <param name="timeToLive">The resource record time to live.</param>
+        /// <param name="length">The length of the resource record data.</param>
+        /// <param name="data">The resource record-specific data.</param>
+        /// <param name="message">The complete original message.</param>
         /// <remarks>
         /// Only used from internal parsing code.
         /// </remarks>
@@ -26,7 +37,8 @@ namespace Ward.Dns.Records
             ushort length,
             ReadOnlyMemory<byte> data,
             byte[] message
-        ) : base(name, Dns.Type.CNAME, @class, timeToLive, length, data) {
+        ) : base(name, Type.CNAME, @class, timeToLive, length, data)
+        {
             var _ = 0;
             Hostname = ParseComplexName(message, data.ToArray(), ref _);
         }
@@ -43,14 +55,12 @@ namespace Ward.Dns.Records
             Class @class,
             uint timeToLive,
             string cname
-        ) : base(name, Dns.Type.CNAME, @class, timeToLive, 0, Array.Empty<byte>()) {
+        ) : base(name, Type.CNAME, @class, timeToLive, 0, Array.Empty<byte>())
+        {
             Hostname = cname;
         }
 
-        /// <summary>
-        /// Converts the current record to a string.
-        /// </summary>
-        /// <returns>A string version of the current record.</returns>
+        /// <inheritdoc />
         [System.Diagnostics.DebuggerStepThrough]
         public override string ToString() =>
             $"{Name}\t{TimeToLive}\t{Class}\t{Type}\t{Hostname}";

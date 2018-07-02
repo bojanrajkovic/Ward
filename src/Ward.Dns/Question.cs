@@ -1,8 +1,3 @@
-using System;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Ward.Dns
 {
     /// <summary>
@@ -10,15 +5,15 @@ namespace Ward.Dns
     /// </summary>
     public class Question
     {
-        /// <summary>The name being queried.</summary>
+        /// <summary>Gets the name being queried.</summary>
         /// <returns>The name being queried.</returns>
         public string Name { get; }
 
-        /// <summary>The record type being queried.</summary>
+        /// <summary>Gets the record type being queried.</summary>
         /// <returns>The record type being queried.</returns>
         public Type Type { get; }
 
-        /// <summary>The record class being queried.</summary>
+        /// <summary>Gets the record class being queried.</summary>
         /// <returns>The record class being queried.</returns>
         public Class Class { get; }
 
