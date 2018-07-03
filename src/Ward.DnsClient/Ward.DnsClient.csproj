@@ -9,9 +9,9 @@
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
   </PropertyGroup>
   <ItemGroup Label="NuGet Packages">
-    <PackageReference Include="System.Buffers" Version="4.4.0" />
-    <PackageReference Include="System.Net.Http.WinHttpHandler" Version="4.4.0" />
-    <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />
+    <PackageReference Include="System.Buffers" Version="4.5.0" />
+    <PackageReference Include="System.Net.Http.WinHttpHandler" Version="4.5.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
     <ProjectReference Include="..\Ward.Dns\Ward.Dns.csproj" />
   </ItemGroup>
 </Project>
