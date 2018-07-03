@@ -13,10 +13,8 @@ build:
     verbosity: minimal
 before_test:
   - ps: |
-      # Install OpenCover and ReportGenerator for coverage
+      # Install OpenCover
       nuget install -OutputDirectory packages -Version 4.6.519 OpenCover
-      nuget install -OutputDirectory packages -Version 3.1.2 ReportGenerator
-      nuget install -OutputDirectory packages -Version 0.8.0-beta0001 -Prerelease coveralls.net
 test_script:
   - ps: |
       # Run tests & coverage
