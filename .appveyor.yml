@@ -3,6 +3,7 @@ version: "{build}"
 configuration: Release
 environment:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    RunCoverage: true
 install:
   - ps: choco install gitversion.portable -pre -y -r --no-progress
   - ps: choco install codecov -y -r --no-progress
