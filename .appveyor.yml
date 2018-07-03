@@ -3,11 +3,10 @@ version: "{build}"
 configuration: Release
 environment:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-    COVERALLS_REPO_TOKEN:
-        secure: tHVOzWM7nri9zj8uUeC9pkQbzF8HdMzjL6mVF/RC74OGko2GxyOfbCfTN1NOULlg
-    RunCoverage: "True"
+    RunCoverage: true
 install:
   - ps: choco install gitversion.portable -pre -y -r --no-progress
+  - ps: choco install codecov -pre -y -r --no-progress --version 1.0.5
 before_build:
   - dotnet restore
   - ps: gitversion /output buildserver /updateAssemblyInfo
@@ -15,10 +14,8 @@ build:
     verbosity: minimal
 before_test:
   - ps: |
-      # Install OpenCover and ReportGenerator for coverage
+      # Install OpenCover
       nuget install -OutputDirectory packages -Version 4.6.519 OpenCover
-      nuget install -OutputDirectory packages -Version 3.1.2 ReportGenerator
-      nuget install -OutputDirectory packages -Version 0.8.0-beta0001 -Prerelease coveralls.net
 test_script:
   - ps: |
       # Run tests & coverage
@@ -27,26 +24,13 @@ test_script:
          -targetargs:"test" -output:"coverage.xml" -oldstyle `
          -filter:"+[Ward*]* -[Ward.DnsClient]Asn1.* -[Ward.*.Tests]*" `
          -excludebyattribute:*DebuggerStepThrough*
+      codecov -f "coverage.xml"
 after_test:
   - ps: |
       # Run some benchmarks
       Push-Location .\benchmarks\Ward.Benchmarks
       dotnet run -c Release -f net461 -- --attribute=RunInCI
       Pop-Location
-  - ps: |
-      # Generate coverage report
-      .\packages\ReportGenerator.3.1.2\tools\ReportGenerator.exe -reports:coverage.xml -targetdir:coverage
-  - ps: |
-      # Upload to Coveralls for non-PR builds. AppVeyor doesn't expose secret
-      # variables to PR builds.
-      if ($env:APPVEYOR_PULL_REQUEST_TITLE -eq $null) {
-        $coveralls = (Resolve-Path "packages\\coveralls.net.*\\tools\\csmacnz.coveralls.exe").ToString()
-        & $coveralls --opencover -i coverage.xml --repoToken $env:COVERALLS_REPO_TOKEN `
-          --commitId $env:APPVEYOR_REPO_COMMIT --commitBranch $env:APPVEYOR_REPO_BRANCH `
-          --commitAuthor $env:APPVEYOR_REPO_COMMIT_AUTHOR `
-          --commitEmail $env:APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL `
-          --commitMessage $env:APPVEYOR_REPO_COMMIT_MESSAGE --jobId $env:APPVEYOR_JOB_ID
-      }
   - dotnet msbuild /t:Restore,Pack /p:PackageOutputPath=artifacts /p:Version="%GitVersion_NuGetVersion%"
   - dotnet pack src\Ward.Console\Ward.Console.csproj /p:Version="%GitVersion_NuGetVersion%"
 artifacts:
