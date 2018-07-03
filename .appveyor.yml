@@ -6,7 +6,7 @@ environment:
     RunCoverage: true
 install:
   - ps: choco install gitversion.portable -pre -y -r --no-progress
-  - ps: choco install codecov -y -r --no-progress
+  - ps: choco install codecov -pre -y -r --no-progress --version 1.0.5
 before_build:
   - dotnet restore
   - ps: gitversion /output buildserver /updateAssemblyInfo
