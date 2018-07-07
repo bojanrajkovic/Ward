@@ -7,9 +7,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Ward.Dns.Records;
-using static Ward.Dns.Utils;
 
-using OptData = System.Collections.Generic.IEnumerable<(
+using static System.Buffers.Binary.BinaryPrimitives;
+using static System.BitConverter;
+
+using OptData = System.Collections.Generic.IList<(
     Ward.Dns.Records.OptRecord.OptionCode optionCode,
     System.ReadOnlyMemory<byte> optionData
 )>;
@@ -19,17 +21,17 @@ namespace Ward.Dns
     /// <summary>
     /// Writes messages in the DNS wire format.
     /// </summary>
-    public class MessageWriter
+    public static class MessageWriter
     {
         /// <summary>
         /// The EDNS0 version supported.
         /// </summary>
-        const int edns0Version = 0;
+        const int Edns0Version = 0;
 
         /// <summary>
         /// Does this client understand DNSSEC?
         /// </summary>
-        const bool dnsSecOk = false;
+        const bool DnsSecOk = false;
 
         /// <summary>
         /// Asynchronously serializes a DNS message
@@ -52,19 +54,18 @@ namespace Ward.Dns
                 // This offset map will pass down along all the QNAME writes
                 // so that we can implement the QNAME compression scheme.
                 var offsetMap = new Dictionary<string, ushort>();
-                await WriteHeaderToStreamAsync(m.Header, writeOpt, s);
+                await WriteHeaderToStreamAsync(m.Header, writeOpt, s).ConfigureAwait(false);
 
                 foreach (var question in m.Questions)
-                    await WriteQuestionToStreamAsync(question, s, offsetMap);
+                    await WriteQuestionToStreamAsync(question, s, offsetMap).ConfigureAwait(false);
 
-                var records = m.Answers.Concat(m.Authority).Concat(m.Additional);
-                foreach (var record in records)
-                    await WriteRecordToStreamAsync(record, s, offsetMap);
+                foreach (var record in m.Answers.Concat(m.Authority).Concat(m.Additional))
+                    await WriteRecordToStreamAsync(record, s, offsetMap).ConfigureAwait(false);
 
                 // If we've been asked to write an opt record, or if we *need* to write an
                 // opt record because the header RCODE is > 15, write an OPT.
                 if (writeOpt)
-                    await WriteOptRecordToStreamAsync(udpPayloadSize, optData, m.Header, s);
+                    await WriteOptRecordToStreamAsync(udpPayloadSize, optData, m.Header, s).ConfigureAwait(false);
 
                 return s.ToArray();
             }
@@ -84,41 +85,41 @@ namespace Ward.Dns
             Stream s
         ) {
             // OPT pseudo-RR's always have a null name.
-            await s.WriteAsync(new byte[] { 0 }, 0, 1);
+            await s.WriteAsync(new byte[] { 0 }, 0, 1).ConfigureAwait(false);
 
             // Write the OPT type, and the UDP payload size as the class.
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)Type.OPT)), 0, 2);
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)udpPayloadSize)), 0, 2);
+            await s.WriteAsync(GetBytes(ReverseEndianness((ushort)Type.OPT)), 0, 2).ConfigureAwait(false);
+            await s.WriteAsync(GetBytes(ReverseEndianness(udpPayloadSize)), 0, 2).ConfigureAwait(false);
 
             // Compute the extended RCODE, which is the high 8 bits of the return code.
             // We can safely ignore the one in the OPT record for now, because the only way to create
             // a mismatch is to modify Ward internals.
-            byte extendedRcode = (byte)((ushort)header.ReturnCode >> 4);
+            var extendedRcode = (byte)((ushort)header.ReturnCode >> 4);
 
             s.WriteByte(extendedRcode);
-            s.WriteByte(edns0Version);
+            s.WriteByte(Edns0Version);
 
-            var remainingFlags = (dnsSecOk ? (ushort)(1 << 15) : (ushort)0);
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(remainingFlags)), 0, 2);
+            const ushort remainingFlags = (DnsSecOk ? 1 << 15 : 0);
+            await s.WriteAsync(GetBytes(ReverseEndianness(remainingFlags)), 0, 2).ConfigureAwait(false);
 
             // Write all of the rdata.
             byte[] rdata;
-            if (optData == null || optData.Count() == 0)
+            if (optData?.Any() != true)
                 rdata = Array.Empty<byte>();
             else {
-                var arrayOfArrays = new byte[optData.Count()*3][];
-                int pos = 0;
-                foreach (var data in optData) {
-                    arrayOfArrays[pos++] = BitConverter.GetBytes(SwapUInt16((ushort)data.optionCode));
-                    arrayOfArrays[pos++] = BitConverter.GetBytes(SwapUInt16((ushort)data.optionData.Length));
-                    arrayOfArrays[pos++] = data.optionData.ToArray();
-                };
+                var arrayOfArrays = new byte[optData.Count*3][];
+                var pos = 0;
+                foreach (var (optionCode, optionData) in optData) {
+                    arrayOfArrays[pos++] = GetBytes(ReverseEndianness((ushort)optionCode));
+                    arrayOfArrays[pos++] = GetBytes(ReverseEndianness((ushort)optionData.Length));
+                    arrayOfArrays[pos++] = optionData.ToArray();
+                }
                 rdata = Utils.Concat(arrayOfArrays);
             }
 
             // Now we've written type, class, and "TTL", we can write the data as normal.
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)rdata.Length)), 0, 2);
-            await s.WriteAsync(rdata, 0, rdata.Length);
+            await s.WriteAsync(GetBytes(ReverseEndianness((ushort)rdata.Length)), 0, 2).ConfigureAwait(false);
+            await s.WriteAsync(rdata, 0, rdata.Length).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -133,17 +134,17 @@ namespace Ward.Dns
             var qname = Utils.WriteQName(r.Name, offsetMap);
             if (!string.IsNullOrWhiteSpace(r.Name) && !offsetMap.ContainsKey(r.Name))
                 offsetMap.Add(r.Name, (ushort)s.Position);
-            await s.WriteAsync(qname, 0, qname.Length);
+            await s.WriteAsync(qname, 0, qname.Length).ConfigureAwait(false);
 
             // Write the type, class, and TTL
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)r.Type)), 0, 2);
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)r.Class)), 0, 2);
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt32(r.TimeToLive)), 0, 4);
+            await s.WriteAsync(GetBytes(ReverseEndianness((ushort)r.Type)), 0, 2).ConfigureAwait(false);
+            await s.WriteAsync(GetBytes(ReverseEndianness((ushort)r.Class)), 0, 2).ConfigureAwait(false);
+            await s.WriteAsync(GetBytes(ReverseEndianness(r.TimeToLive)), 0, 4).ConfigureAwait(false);
 
             // Compute the record data and write its length and the data.
-            var data = await GetDataForRecordAsync(r, s, offsetMap);
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)data.Length)), 0, 2);
-            await s.WriteAsync(data.ToArray(), 0, data.Length);
+            var data = await GetDataForRecordAsync(r, s, offsetMap).ConfigureAwait(false);
+            await s.WriteAsync(GetBytes(ReverseEndianness((ushort)data.Length)), 0, 2).ConfigureAwait(false);
+            await s.WriteAsync(data.ToArray(), 0, data.Length).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -169,7 +170,7 @@ namespace Ward.Dns
                         offsetMap.Add(mx.Hostname, (ushort)(s.Position + 4));
 
                     return Utils.Concat(
-                        BitConverter.GetBytes(SwapUInt16(mx.Preference)),
+                        GetBytes(ReverseEndianness(mx.Preference)),
                         mxQName
                     );
                 case CaaRecord caa:
@@ -178,11 +179,7 @@ namespace Ward.Dns
                     var tagLength = (byte)tagAscii.Length;
                     var value = Encoding.ASCII.GetBytes(caa.Value);
 
-                    return Utils.Concat(
-                        new byte[] { critical, tagLength },
-                        tagAscii,
-                        value
-                    );
+                    return Utils.Concat(new[] { critical, tagLength }, tagAscii, value);
                 case CnameRecord cname:
                     var hostname = Utils.WriteQName(cname.Hostname, offsetMap);
                     if (!offsetMap.ContainsKey(cname.Hostname))
@@ -205,11 +202,11 @@ namespace Ward.Dns
                     var responsiblePerson = Utils.WriteQName(soa.ResponsibleName, offsetMap);
                     if (!offsetMap.ContainsKey(soa.ResponsibleName))
                         offsetMap.Add(soa.ResponsibleName, (ushort)(s.Position + 2 + primaryNsName.Length));
-                    var serialBytes = BitConverter.GetBytes(Utils.SwapUInt32(soa.Serial));
-                    var refreshBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(soa.Refresh));
-                    var retryBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(soa.Retry));
-                    var expireBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(soa.Expire));
-                    var minimumTtl = BitConverter.GetBytes(Utils.SwapUInt32(soa.MinimumTtl));
+                    var serialBytes = GetBytes(ReverseEndianness(soa.Serial));
+                    var refreshBytes = GetBytes(IPAddress.HostToNetworkOrder(soa.Refresh));
+                    var retryBytes = GetBytes(IPAddress.HostToNetworkOrder(soa.Retry));
+                    var expireBytes = GetBytes(IPAddress.HostToNetworkOrder(soa.Expire));
+                    var minimumTtl = GetBytes(ReverseEndianness(soa.MinimumTtl));
                     return Utils.Concat(
                         primaryNsName,
                         responsiblePerson,
@@ -239,13 +236,13 @@ namespace Ward.Dns
             if (!offsetMap.ContainsKey(q.Name))
                 offsetMap.Add(q.Name, (ushort)s.Position);
 
-            await s.WriteAsync(qname, 0, qname.Length);
+            await s.WriteAsync(qname, 0, qname.Length).ConfigureAwait(false);
 
-            var type = BitConverter.GetBytes(Utils.SwapUInt16((ushort) q.Type));
-            await s.WriteAsync(type, 0, 2);
+            var type = GetBytes(ReverseEndianness((ushort) q.Type));
+            await s.WriteAsync(type, 0, 2).ConfigureAwait(false);
 
-            var @class = BitConverter.GetBytes(Utils.SwapUInt16((ushort) q.Class));
-            await s.WriteAsync(@class, 0, 2);
+            var @class = GetBytes(ReverseEndianness((ushort) q.Class));
+            await s.WriteAsync(@class, 0, 2).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -257,7 +254,7 @@ namespace Ward.Dns
         /// <param name="s">The stream to which to write.</param>
         static async Task WriteHeaderToStreamAsync(Header h, bool writeOpt, Stream s)
         {
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(h.Id)), 0, 2);
+            await s.WriteAsync(GetBytes(ReverseEndianness(h.Id)), 0, 2).ConfigureAwait(false);
 
             ushort flags = 0;
             flags |= (ushort)((h.Flags.Query ? 0 : 1) << 15);
@@ -271,13 +268,13 @@ namespace Ward.Dns
             flags |= (ushort)((h.Flags.CheckingDisabled ? 1 : 0) << 4);
             // We can only take the _bottom 4 bits_ here, so mask off everything but the bottom 4.
             flags |= (byte)((ushort)h.ReturnCode & 0b0000_0000_0000_1111);
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(flags)), 0, 2);
+            await s.WriteAsync(GetBytes(ReverseEndianness(flags)), 0, 2).ConfigureAwait(false);
 
             var optBonus = writeOpt ? 1 : 0;
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(h.TotalQuestions)), 0, 2);
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(h.TotalAnswerRecords)), 0, 2);
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16(h.TotalAuthorityRecords)), 0, 2);
-            await s.WriteAsync(BitConverter.GetBytes(SwapUInt16((ushort)(h.TotalAdditionalRecords+optBonus))), 0, 2);
+            await s.WriteAsync(GetBytes(ReverseEndianness(h.TotalQuestions)), 0, 2).ConfigureAwait(false);
+            await s.WriteAsync(GetBytes(ReverseEndianness(h.TotalAnswerRecords)), 0, 2).ConfigureAwait(false);
+            await s.WriteAsync(GetBytes(ReverseEndianness(h.TotalAuthorityRecords)), 0, 2).ConfigureAwait(false);
+            await s.WriteAsync(GetBytes(ReverseEndianness((ushort)(h.TotalAdditionalRecords+optBonus))), 0, 2).ConfigureAwait(false);
         }
     }
 }
