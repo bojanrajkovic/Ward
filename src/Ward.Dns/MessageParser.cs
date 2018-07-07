@@ -1,6 +1,8 @@
 using System;
-using System.Buffers;
+using System.Collections.Generic;
 using Ward.Dns.Records;
+
+using static System.Buffers.Binary.BinaryPrimitives;
 using static Ward.Dns.Utils;
 
 namespace Ward.Dns
@@ -8,7 +10,7 @@ namespace Ward.Dns
     /// <summary>
     /// A parser for DNS messages.
     /// </summary>
-    public class MessageParser
+    public static class MessageParser
     {
         /// <summary>
         /// Parses a DNS message from <paramref name="bytes" />, starting at
@@ -17,30 +19,30 @@ namespace Ward.Dns
         /// <param name="bytes">The bytes to parse the message from.</param>
         /// <param name="offset">The offset in the array to start parsing from.</param>
         /// <returns>A parsed DNS message.</returns>
-        public static Message ParseMessage(byte[] bytes, int offset)
+        public static Message ParseMessage(ReadOnlySpan<byte> bytes, int offset = 0)
         {
-            var pos = offset;
+            var reverseOffsetMap = new Dictionary<int, string>();
 
             // First, the header. The header is 12 bytes long, and consists
             // of a 2 byte ID, 2 bytes of flags, and 8 bytes of "lengths" for
             // the 4 sections.
-            var id = SwapUInt16(BitConverter.ToUInt16(bytes, pos));
-            pos += 2;
+            var id = ReadUInt16BigEndian(bytes);
+            offset += 2;
 
             // Parse the flags out of the header--the easiest way to do this is
             // read all 16 bits, then bit-bang the flags out.
-            var flagsBitfield = SwapUInt16(BitConverter.ToUInt16(bytes, pos));
+            var flagsBitfield = ReadUInt16BigEndian(bytes.Slice(offset, 2));
             var opcode = (Opcode)(flagsBitfield & 0b0111_1000_0000_0000);
             var returnCode = (ReturnCode)(flagsBitfield & 0b0000_0000_0000_1111);
             var flags = new Header.HeaderFlags(flagsBitfield);
-            pos += 2;
+            offset += 2;
 
             // Read the section counts (questions, answers, authority, additional)
-            var qCount = SwapUInt16(BitConverter.ToUInt16(bytes, pos));
-            var anCount = SwapUInt16(BitConverter.ToUInt16(bytes, pos + 2));
-            var auCount = SwapUInt16(BitConverter.ToUInt16(bytes, pos + 4));
-            var adCount = SwapUInt16(BitConverter.ToUInt16(bytes, pos + 6));
-            pos += 8;
+            var qCount = ReadUInt16BigEndian(bytes.Slice(offset, 2));
+            var anCount = ReadUInt16BigEndian(bytes.Slice(offset + 2, 2));
+            var auCount = ReadUInt16BigEndian(bytes.Slice(offset + 4, 2));
+            var adCount = ReadUInt16BigEndian(bytes.Slice(offset + 6, 2));
+            offset += 8;
 
             // Now parse the questions and records out.
             var questions = new Question[qCount];
@@ -51,10 +53,14 @@ namespace Ward.Dns
             // Questions are easy parsing--name, type, and class.
             for (var q = 0; q < qCount; q++) {
                 // ParseComplexName will advance `pos`,
-                var name = ParseComplexName(bytes, null, ref pos);
-                var type = (Type)SwapUInt16(BitConverter.ToUInt16(bytes, pos));
-                var @class = (Class)SwapUInt16(BitConverter.ToUInt16(bytes, pos + 2));
-                pos += 4;
+                var origOffset = offset;
+                var name = ParseComplexName(bytes, ReadOnlySpan<byte>.Empty, ref offset, reverseOffsetMap);
+
+                reverseOffsetMap.Add(origOffset, name);
+
+                var type = (Type)ReadUInt16BigEndian(bytes.Slice(offset, 2));
+                var @class = (Class)ReadUInt16BigEndian(bytes.Slice(offset + 2, 2));
+                offset += 4;
 
                 questions[q] = new Question(name, type, @class);
             }
@@ -62,25 +68,26 @@ namespace Ward.Dns
             // Parse each individual record for the answer, authority, and
             // additional sections.
             for (var a = 0; a < anCount; a++)
-                answers[a] = ParseRecord(bytes, ref pos);
+                answers[a] = ParseRecord(bytes, ref offset, reverseOffsetMap);
 
             for (var a = 0; a < auCount; a++)
-                authorities[a] = ParseRecord(bytes, ref pos);
+                authorities[a] = ParseRecord(bytes, ref offset, reverseOffsetMap);
 
             bool haveSeenOptRecord = false;
             for (var a = 0; a < adCount; a++) {
-                var newRecord = ParseRecord(bytes, ref pos);
+                var newRecord = ParseRecord(bytes, ref offset, reverseOffsetMap);
                 additionals[a] = newRecord;
 
                 // Validate, and update RCODE if OPT contains extended RCODE bits.
-                if (newRecord is OptRecord opt) {
-                    if (haveSeenOptRecord)
-                        throw new InvalidOperationException("Invalid DNS message, contains multiple OPT pseudo-RRs!");
-                    haveSeenOptRecord = true;
-                    if (opt.ExtendedRcode != 0)
-                        returnCode = (ReturnCode)(opt.ExtendedRcode << 4 | (ushort)returnCode);
-                }
+                if (!(newRecord is OptRecord opt))
+                    continue;
 
+                if (haveSeenOptRecord)
+                    throw new InvalidOperationException("Invalid DNS message, contains multiple OPT pseudo-RRs!");
+
+                haveSeenOptRecord = true;
+                if (opt.ExtendedRcode != 0)
+                    returnCode = (ReturnCode)(opt.ExtendedRcode << 4 | (ushort)returnCode);
             }
 
             // Build the header now that we've computed the entire RCODE,
@@ -90,20 +97,34 @@ namespace Ward.Dns
         }
 
         /// <summary>
-        /// Parses a record from <paramref name="bytes"/>, starting at
-        /// <paramref name="offset"/>.
+        /// Parses a record from <paramref name="bytes" />, starting at
+        /// <paramref name="offset" />.
         /// </summary>
         /// <param name="bytes">The array to parse from.</param>
         /// <param name="offset">The offset to start parsing at.</param>
-        /// <returns>A parsed record.</returns>
-        static Record ParseRecord(byte[] bytes, ref int offset)
-        {
-            var name = ParseComplexName(bytes, null, ref offset);
-            var type = (Type)SwapUInt16(BitConverter.ToUInt16(bytes, offset));
-            var @class = (Class)SwapUInt16(BitConverter.ToUInt16(bytes, offset + 2));
-            var ttl = SwapUInt32(BitConverter.ToUInt32(bytes, offset + 4));
-            var dataLength = SwapUInt16(BitConverter.ToUInt16(bytes, offset + 8));
-            var data = new ReadOnlyMemory<byte>(bytes, offset + 10, dataLength);
+        /// <param name="reverseOffsetMap">The reverse offset map.</param>
+        /// <returns>
+        /// A parsed record.
+        /// </returns>
+        static Record ParseRecord(
+            ReadOnlySpan<byte> bytes,
+            ref int offset,
+            Dictionary<int, string> reverseOffsetMap
+        ) {
+            // Read the name first, without touching the full array.
+            var origOffset = offset;
+            var name = ParseComplexName(bytes, null, ref offset, reverseOffsetMap);
+            reverseOffsetMap.Add(origOffset, name);
+
+            // Now slice this away for easier offsetting.
+            var origBytes = bytes;
+            bytes = bytes.Slice(offset);
+
+            var type = (Type)ReadUInt16BigEndian(bytes);
+            var @class = (Class)ReadUInt16BigEndian(bytes.Slice(2, 2));
+            var ttl = ReadUInt32BigEndian(bytes.Slice(4, 4));
+            var dataLength = ReadUInt16BigEndian(bytes.Slice(8, 2));
+            var data = bytes.Slice(10, dataLength);
 
             // 2 bytes of type, 2 bytes of class, 4 bytes of TTL, 2 bytes of data length,
             // dataLength bytes of data.
@@ -115,8 +136,9 @@ namespace Ward.Dns
                 @class,
                 ttl,
                 dataLength,
-                data,
-                bytes
+                new ReadOnlyMemory<byte>(data.ToArray()),
+                origBytes,
+                reverseOffsetMap
             );
         }
     }

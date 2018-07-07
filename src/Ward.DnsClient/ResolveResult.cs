@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 
 using Ward.Dns;
@@ -19,16 +20,16 @@ namespace Ward.DnsClient
         public Header Header => message.Header;
 
         /// <inheritdoc />
-        public ImmutableList<Record> Answers => message.Answers;
+        public IReadOnlyList<Record> Answers => message.Answers;
 
         /// <inheritdoc />
-        public ImmutableList<Record> Authority => message.Authority;
+        public IReadOnlyList<Record> Authority => message.Authority;
 
         /// <inheritdoc />
-        public ImmutableList<Record> Additional => message.Additional;
+        public IReadOnlyList<Record> Additional => message.Additional;
 
         /// <inheritdoc />
-        public ImmutableList<Question> Questions => message.Questions;
+        public IReadOnlyList<Question> Questions => message.Questions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResolveResult"/> class.

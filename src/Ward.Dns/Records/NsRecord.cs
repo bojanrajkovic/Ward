@@ -1,5 +1,5 @@
 using System;
-
+using System.Collections.Generic;
 using static Ward.Dns.Utils;
 
 namespace Ward.Dns.Records
@@ -29,6 +29,7 @@ namespace Ward.Dns.Records
         /// <param name="length">The length of the resource record data.</param>
         /// <param name="data">The resource record-specific data.</param>
         /// <param name="message">The complete original message.</param>
+        /// <param name="reverseOffsetMap">The reverse offset map.</param>
         /// <remarks>
         /// Only used from internal parsing code.
         /// </remarks>
@@ -38,10 +39,11 @@ namespace Ward.Dns.Records
             uint timeToLive,
             ushort length,
             ReadOnlyMemory<byte> data,
-            byte[] message
+            ReadOnlySpan<byte> message,
+            Dictionary<int, string> reverseOffsetMap
         ) : base(name, Type.NS, @class, timeToLive, length, data) {
             var _ = 0;
-            Hostname = ParseComplexName(message, data.ToArray(), ref _);
+            Hostname = ParseComplexName(message, data.Span, ref _, reverseOffsetMap);
         }
 
         /// <summary>

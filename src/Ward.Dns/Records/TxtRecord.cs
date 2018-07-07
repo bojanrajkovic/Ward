@@ -1,5 +1,8 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Text;
+
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Ward.Dns.Records
 {
@@ -17,6 +20,11 @@ namespace Ward.Dns.Records
         /// <summary>
         /// Creates a TXT record.
         /// </summary>
+        /// <param name="name">The owner-name or label to which this record belongs.</param>
+        /// <param name="class">The resource record class.</param>
+        /// <param name="timeToLive">The resource record time to live.</param>
+        /// <param name="length">The length of the resource record data.</param>
+        /// <param name="data">The resource record-specific data.</param>
         /// <remarks>
         /// Only used from internal parsing code.
         /// </remarks>
@@ -27,8 +35,11 @@ namespace Ward.Dns.Records
             ushort length,
             ReadOnlyMemory<byte> data
         ) : base(name, Type.TXT, @class, timeToLive, length, data) {
-            using (var pin = data.Pin())
-                TextData = Encoding.ASCII.GetString((byte*)pin.Pointer + 1, *((byte*)pin.Pointer));
+            var textStr = new string('\0', data.Span[0]);
+            fixed (char *text = textStr)
+            fixed (byte *buf = &MemoryMarshal.GetReference(data.Span))
+                StringUtilities.TryGetAsciiString(buf+1, text, data.Span[0]);
+            TextData = textStr;
         }
 
         /// <summary>

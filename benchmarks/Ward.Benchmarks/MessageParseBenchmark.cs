@@ -1,9 +1,4 @@
-using System;
-using System.IO;
-
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Attributes.Jobs;
-using BenchmarkDotNet.Diagnosers;
 using Ward.Dns;
 using Ward.Tests.Core;
 
@@ -25,7 +20,7 @@ namespace Ward.Benchmarks
         [Benchmark]
         public int ParseMessage()
         {
-            var message = MessageParser.ParseMessage(messageData, 0);
+            var message = MessageParser.ParseMessage(messageData);
             return message.Header.TotalQuestions;
         }
     }

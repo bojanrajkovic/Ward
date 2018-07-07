@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -41,7 +42,7 @@ namespace Ward.Dns.Tests
 
             // But if we inspect the bytes, we should find that only the 2nd and 3rd are set
             // in the actual header RCODE field.
-            var flagsBitfield = Utils.SwapUInt16(BitConverter.ToUInt16(serializedMessage, 2));
+            var flagsBitfield = BinaryPrimitives.ReadUInt16BigEndian(new ReadOnlySpan<byte>(serializedMessage).Slice(2));
             var returnCode = (ReturnCode)(flagsBitfield & 0b0000_0000_0000_1111);
             Assert.Equal((ReturnCode)0b0000_0110, returnCode);
 

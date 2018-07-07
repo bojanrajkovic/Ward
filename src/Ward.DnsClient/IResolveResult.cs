@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 
 using Ward.Dns;
@@ -31,7 +32,7 @@ namespace Ward.DnsClient
         /// <value>
         /// The answers.
         /// </value>
-        ImmutableList<Record> Answers { get; }
+        IReadOnlyList<Record> Answers { get; }
 
         /// <summary>
         /// Gets the authoritative servers.
@@ -39,7 +40,7 @@ namespace Ward.DnsClient
         /// <value>
         /// The authoritative servers.
         /// </value>
-        ImmutableList<Record> Authority { get; }
+        IReadOnlyList<Record> Authority { get; }
 
         /// <summary>
         /// Gets the additional records.
@@ -47,7 +48,7 @@ namespace Ward.DnsClient
         /// <value>
         /// The additional records.
         /// </value>
-        ImmutableList<Record> Additional { get; }
+        IReadOnlyList<Record> Additional { get; }
 
         /// <summary>
         /// Gets the questions.
@@ -55,6 +56,6 @@ namespace Ward.DnsClient
         /// <value>
         /// The questions.
         /// </value>
-        ImmutableList<Question> Questions { get; }
+        IReadOnlyList<Question> Questions { get; }
     }
 }
