@@ -1,5 +1,8 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Text;
+
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Ward.Dns.Records
 {
@@ -58,9 +61,22 @@ namespace Ward.Dns.Records
             Critical = (data.Span[0] & 0b1000_0000) == 0b1000_0000;
             var tagLength = data.Span[1];
 
-            var dataPointer = data.Pin().Pointer;
-            Tag = Encoding.ASCII.GetString((byte*)dataPointer + 2, tagLength);
-            Value = Encoding.ASCII.GetString((byte*)dataPointer + 2 + tagLength, (length - 2 - tagLength));
+            var tagStr = new string('\0', tagLength);
+            var valueStr = new string('\0', length - 2 - tagLength);
+
+            fixed (char *tag = tagStr)
+            fixed (char *value = valueStr)
+            fixed (byte* buf = &MemoryMarshal.GetReference(data.Span)) {
+                var bufPtr = buf;
+                // Advance 2 bytes to skip flag and tag length.
+                bufPtr += 2;
+                StringUtilities.TryGetAsciiString(bufPtr, tag, tagLength);
+                bufPtr += tagLength;
+                StringUtilities.TryGetAsciiString(bufPtr, value, length - 2 - tagLength);
+            }
+
+            Tag = tagStr;
+            Value = valueStr;
         }
 
         /// <summary>
