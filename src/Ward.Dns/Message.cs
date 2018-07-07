@@ -21,25 +21,25 @@ namespace Ward.Dns
         /// Gets the list of questions in this message.
         /// </summary>
         /// <returns>The list of questions in this message.</returns>
-        public ImmutableList<Question> Questions { get; }
+        public IReadOnlyList<Question> Questions { get; }
 
         /// <summary>
         /// Gets the list of answers in this message.
         /// </summary>
         /// <returns>The list of answers in this message.</returns>
-        public ImmutableList<Record> Answers { get; }
+        public IReadOnlyList<Record> Answers { get; }
 
         /// <summary>
         /// Gets the list of entries in the authority section of this message.
         /// </summary>
         /// <returns>The entries in the authority section of the message.</returns>
-        public ImmutableList<Record> Authority { get; }
+        public IReadOnlyList<Record> Authority { get; }
 
         /// <summary>
         /// Gets the list of entries in the additional section of this message.
         /// </summary>
         /// <returns>The entries in the additional section of this message.</returns>
-        public ImmutableList<Record> Additional { get; }
+        public IReadOnlyList<Record> Additional { get; }
 
         /// <summary>
         /// Creates a new DNS message.
@@ -51,16 +51,16 @@ namespace Ward.Dns
         /// <param name="additional">The additional entries to include in the message.</param>
         public Message(
             Header header,
-            IEnumerable<Question> questions,
-            IEnumerable<Record> answers,
-            IEnumerable<Record> authority,
-            IEnumerable<Record> additional
+            IReadOnlyList<Question> questions,
+            IReadOnlyList<Record> answers,
+            IReadOnlyList<Record> authority,
+            IReadOnlyList<Record> additional
         ) {
             Header = header;
-            Questions = questions.ToImmutableList();
-            Answers = answers.ToImmutableList();
-            Authority = authority.ToImmutableList();
-            Additional = additional.ToImmutableList();
+            Questions = questions;
+            Answers = answers;
+            Authority = authority;
+            Additional = additional;
         }
     }
 }
