@@ -1,5 +1,5 @@
-using System;
 using System.Runtime.InteropServices;
+
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Environments;
@@ -15,17 +15,8 @@ namespace Ward.Benchmarks
             var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
             Add(Job.Default.With(CsProjCoreToolchain.NetCoreApp21));
-
-            if (isWindows)
-                Add(Job.Default.With(CsProjClassicNetToolchain.Net461));
-            else
-                Add(Job.Default.With(Runtime.Mono));
-
+            Add(isWindows ? Job.Default.With(CsProjClassicNetToolchain.Net461) : Job.Default.With(Runtime.Mono));
             Add(MemoryDiagnoser.Default);
-
-            // If we're not in Appveyor, add hardware counters.
-            if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("APPVEYOR")) && isWindows)
-                Add(HardwareCounter.BranchMispredictions, HardwareCounter.BranchInstructions, HardwareCounter.CacheMisses);
         }
     }
 }
