@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using static System.Buffers.Binary.BinaryPrimitives;
 
 namespace Ward.Dns.Records
 {
@@ -89,7 +90,7 @@ namespace Ward.Dns.Records
             uint timeToLive,
             ushort length,
             ReadOnlyMemory<byte> data,
-            byte[] message
+            ReadOnlySpan<byte> message,
         ) : base(name, Type.SOA, @class, timeToLive, length, data) {
             var dataArray = data.ToArray();
             var offset = 0;
@@ -100,6 +101,11 @@ namespace Ward.Dns.Records
             Retry = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(dataArray, offset + 8));
             Expire = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(dataArray, offset + 12));
             MinimumTtl = Utils.SwapUInt32(BitConverter.ToUInt32(dataArray, offset + 16));
+            Serial = ReadUInt32BigEndian(data.Slice(offset, 4).Span);
+            Refresh = ReadInt32BigEndian(data.Slice(offset + 4, 4).Span);
+            Retry = ReadInt32BigEndian(data.Slice(offset + 8, 4).Span);
+            Expire = ReadInt32BigEndian(data.Slice(offset + 12, 4).Span);
+            MinimumTtl = ReadUInt32BigEndian(data.Slice(offset + 16, 4).Span);
         }
 
         /// <summary>

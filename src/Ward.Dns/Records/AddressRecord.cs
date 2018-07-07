@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.Net;
 
 namespace Ward.Dns.Records
@@ -45,7 +46,13 @@ namespace Ward.Dns.Records
             if (type != Type.A && type != Type.AAAA)
                 throw new ArgumentOutOfRangeException(nameof(type));
 
-            Address = new IPAddress(data.ToArray());
+            // IPv4 addresses we can fast-path via reading a big-endian value
+            // out of the data, because they fit within one. AAAA we have to
+            // convert to bytes here and take the allocation hit.
+            if (type == Type.A)
+                Address = new IPAddress(BinaryPrimitives.ReadUInt32LittleEndian(data.Span));
+            else
+                Address = new IPAddress(data.ToArray());
         }
 
         /// <summary>

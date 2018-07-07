@@ -1,5 +1,6 @@
 using System;
 
+using System.Buffers.Binary;
 using static Ward.Dns.Utils;
 
 namespace Ward.Dns.Records
@@ -50,7 +51,7 @@ namespace Ward.Dns.Records
             byte[] message
         ) : base(name, Type.MX, @class, timeToLive, length, data) {
             var dataArray = data.ToArray();
-            Preference = SwapUInt16(BitConverter.ToUInt16(dataArray, 0));
+            Preference = BinaryPrimitives.ReadUInt16BigEndian(data.Span);
             var _ = 2;
             Hostname = ParseComplexName(message, dataArray, ref _);
         }

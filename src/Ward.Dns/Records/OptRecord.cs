@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-using static Ward.Dns.Utils;
+using static System.Buffers.Binary.BinaryPrimitives;
 
 namespace Ward.Dns.Records
 {
@@ -37,8 +37,6 @@ namespace Ward.Dns.Records
         /// <value>
         /// The list of option code/option data pairs.
         /// </value>
-        /// <param name="optionCode">The option code.</param>
-        /// <param name="optionData">The option data.</param>
         public IReadOnlyList<(OptionCode optionCode, ReadOnlyMemory<byte> optionData)> OptionalData { get; }
 
         /// <summary>
@@ -84,7 +82,7 @@ namespace Ward.Dns.Records
         /// <remarks>
         /// Only used fron internal parsing code.
         /// </remarks>
-        internal unsafe OptRecord(
+        internal OptRecord(
             string name,
             ushort payloadSize,
             uint rcodeAndFlags,
@@ -94,22 +92,17 @@ namespace Ward.Dns.Records
             UdpPayloadSize = payloadSize;
             ExtendedRcode = (byte)(rcodeAndFlags >> 24);
             Edns0Version = (byte)(rcodeAndFlags >> 16);
-            DnsSecOk = (((ushort)rcodeAndFlags) >> 15) == 1;
+            DnsSecOk = (ushort)rcodeAndFlags >> 15 == 1;
 
             var optionalData = new List<(OptionCode optionCode, ReadOnlyMemory<byte> optionData)>();
-            using (var pin = data.Pin()) {
-                var dataPtr = (byte*)pin.Pointer;
-                var pos = 0;
 
-                while (pos < data.Length) {
-                    var optionCode = (OptionCode)SwapUInt16(*(ushort*)(dataPtr + pos));
-                    pos += 2;
-                    var optionLength = SwapUInt16(*(ushort*)(dataPtr + pos));
-                    pos += 2;
-                    var optionData = data.Slice(pos, optionLength);
-                    pos += optionLength;
-                    optionalData.Add((optionCode, optionData));
-                }
+            var pos = 0;
+            while (pos < length) {
+                var optionCode = (OptionCode)ReadUInt16BigEndian(data.Slice(pos, 2).Span);
+                var optionLength = ReadUInt16BigEndian(data.Slice(pos + 2, 2).Span);
+                var optionData = data.Slice(pos + 4, optionLength);
+                optionalData.Add((optionCode, optionData));
+                pos += 4 + optionLength;
             }
             OptionalData = optionalData.AsReadOnly();
         }
