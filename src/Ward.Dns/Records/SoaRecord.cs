@@ -1,5 +1,6 @@
 using System;
-using System.Net;
+using System.Collections.Generic;
+
 using static System.Buffers.Binary.BinaryPrimitives;
 
 namespace Ward.Dns.Records
@@ -81,6 +82,13 @@ namespace Ward.Dns.Records
         /// <summary>
         /// Creates a SOA record.
         /// </summary>
+        /// <param name="name">The owner-name or label to which this record belongs.</param>
+        /// <param name="class">The resource record class.</param>
+        /// <param name="timeToLive">The resource record time to live.</param>
+        /// <param name="length">The length of the resource record data.</param>
+        /// <param name="data">The resource record-specific data.</param>
+        /// <param name="message">The complete original message.</param>
+        /// <param name="reverseOffsetMap">The reverse offset map.</param>
         /// <remarks>
         /// Only used from internal parsing code.
         /// </remarks>
@@ -91,16 +99,12 @@ namespace Ward.Dns.Records
             ushort length,
             ReadOnlyMemory<byte> data,
             ReadOnlySpan<byte> message,
+            Dictionary<int, string> reverseOffsetMap
         ) : base(name, Type.SOA, @class, timeToLive, length, data) {
-            var dataArray = data.ToArray();
             var offset = 0;
-            PrimaryNameServer = Utils.ParseComplexName(message, dataArray, ref offset);
-            ResponsibleName = Utils.ParseComplexName(message, dataArray, ref offset);
-            Serial = Utils.SwapUInt32(BitConverter.ToUInt32(dataArray, offset));
-            Refresh = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(dataArray, offset + 4));
-            Retry = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(dataArray, offset + 8));
-            Expire = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(dataArray, offset + 12));
-            MinimumTtl = Utils.SwapUInt32(BitConverter.ToUInt32(dataArray, offset + 16));
+            PrimaryNameServer = Utils.ParseComplexName(message, data.Span, ref offset, reverseOffsetMap);
+            ResponsibleName = Utils.ParseComplexName(message, data.Span, ref offset, reverseOffsetMap);
+
             Serial = ReadUInt32BigEndian(data.Slice(offset, 4).Span);
             Refresh = ReadInt32BigEndian(data.Slice(offset + 4, 4).Span);
             Retry = ReadInt32BigEndian(data.Slice(offset + 8, 4).Span);

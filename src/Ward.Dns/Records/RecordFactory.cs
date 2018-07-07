@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Ward.Dns.Records
 {
@@ -11,24 +12,25 @@ namespace Ward.Dns.Records
             uint ttl,
             ushort length,
             ReadOnlyMemory<byte> data,
-            byte[] message
+            ReadOnlySpan<byte> message,
+            Dictionary<int, string> reverseOffsetMap
         ) {
             switch (type) {
                 case Type.A:
                 case Type.AAAA:
                     return new AddressRecord(name, type, @class, ttl, length, data);
                 case Type.MX:
-                    return new MailExchangerRecord(name, @class, ttl, length, data, message);
+                    return new MailExchangerRecord(name, @class, ttl, length, data, message, reverseOffsetMap);
                 case Type.CAA:
                     return new CaaRecord(name, @class, ttl, length, data);
                 case Type.CNAME:
-                    return new CnameRecord(name, @class, ttl, length, data, message);
+                    return new CnameRecord(name, @class, ttl, length, data, message, reverseOffsetMap);
                 case Type.NS:
-                    return new NsRecord(name, @class, ttl, length, data, message);
+                    return new NsRecord(name, @class, ttl, length, data, message, reverseOffsetMap);
                 case Type.SOA:
-                    return new SoaRecord(name, @class, ttl, length, data, message);
+                    return new SoaRecord(name, @class, ttl, length, data, message, reverseOffsetMap);
                 case Type.PTR:
-                    return new PtrRecord(name, @class, ttl, length, data, message);
+                    return new PtrRecord(name, @class, ttl, length, data, message, reverseOffsetMap);
                 case Type.TXT:
                     return new TxtRecord(name, @class, ttl, length, data);
                 case Type.OPT:

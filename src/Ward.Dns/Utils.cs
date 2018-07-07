@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+
+using static System.Buffers.Binary.BinaryPrimitives;
 
 namespace Ward.Dns
 {
@@ -18,18 +22,29 @@ namespace Ward.Dns
         /// <param name="message">The whole message being parsed.</param>
         /// <param name="data">The data subset to parse the QNAME from, if parsing from a subset.</param>
         /// <param name="offset">The offset at which to start parsing.</param>
-        /// <returns>A parsed name.</returns>
+        /// <param name="reverseOffsetMap">A reverse offset map for caching offset lookups.</param>
+        /// <returns>
+        /// A parsed name.
+        /// </returns>
         /// <remarks>
-        /// To make life easier, <see cref="ParseComplexName"/> can update the offset
+        /// To make life easier, <see cref="ParseComplexName" /> can update the offset
         /// on its own. It's non-trivial to track for callers. Some callers
         /// may not know the offset in the message, in which case they should
         /// specify a non-null data array, and a 0 offset. Pointers will *always*
         /// be looked up in the message, regardless of the specified offset.
         /// </remarks>
-        public static string ParseComplexName(byte[] message, byte[] data, ref int offset)
+        public static unsafe string ParseComplexName(
+            ReadOnlySpan<byte> message,
+            ReadOnlySpan<byte> data,
+            ref int offset,
+            Dictionary<int, string> reverseOffsetMap = null
+        )
         {
-            var readFrom = data ?? message;
-            var nameBuilder = new StringBuilder();
+            if (reverseOffsetMap == null)
+                reverseOffsetMap = new Dictionary<int, string>();
+
+            var readFrom = data.IsEmpty ? message : data;
+            var nameBuilder = new StringBuilder(253);
             while (true) {
                 // Read the current byte.
                 var nextByte = readFrom[offset++];
@@ -40,22 +55,34 @@ namespace Ward.Dns
                 if ((nextByte & 0b1100_0000) == 0b1100_0000) {
                     // Read 2 bytes, _starting a byte behind us_ (because we already incremented)
                     // and then increment one byte to move past the 2-byte offset.
-                    var ptrToOffset = SwapUInt16(BitConverter.ToUInt16(readFrom, (offset++) - 1));
-                    var offsetToName = (ptrToOffset & 0b0011_1111_1111_1111);
+                    var ptrToOffset = ReadUInt16BigEndian(readFrom.Slice(offset++ - 1, sizeof(ushort)));
+                    var offsetToName = ptrToOffset & 0b0011_1111_1111_1111;
 
-                    // Refs are into the message, not into the data.
-                    nameBuilder.Append(ParseComplexName(message, null, ref offsetToName));
-                    break;
-                } else if (nextByte == 0) {
-                    // EON
+                    nameBuilder.Append(
+                        reverseOffsetMap.TryGetValue(offsetToName, out var existingName)
+                            ? existingName
+                            : ParseComplexName(message, null, ref offsetToName, reverseOffsetMap)
+                    );
                     break;
                 }
 
+                // EON
+                if (nextByte == 0)
+                    break;
+
                 // Otherwise, this is a number of bytes to read, so read it
-                // and append the ASCII string to the builder.
-                nameBuilder.Append(Encoding.ASCII.GetString(readFrom, offset, nextByte));
-                nameBuilder.Append('.');
-                offset += nextByte;
+                // and append the ASCII string to the builder. To read it from
+                // ReadOnlySpan<byte>, we have to slice the buffer correctly at the current
+                // read offset, then get a reference and use the standard GetString
+                // call against byte*.
+                var nameStr = new string('\0', nextByte);
+                fixed (char *name = nameStr)
+                fixed (byte *buffer = &MemoryMarshal.GetReference(readFrom.Slice(offset, nextByte))) {
+                    StringUtilities.TryGetAsciiString(buffer, name, nextByte);
+                    nameBuilder.Append(name, nextByte);
+                    nameBuilder.Append('.');
+                    offset += nextByte;
+                }
             }
 
             return nameBuilder.ToString();
@@ -69,8 +96,8 @@ namespace Ward.Dns
         /// <returns>An encoded/compressed name.</returns>
         /// <remarks>
         /// Any names passed into WriteQName will be punycoded if need be, via the
-        /// <see cref="System.Globalization.IdnMapping"/> class.
-        /// <remarks>
+        /// <see cref="IdnMapping"/> class.
+        /// </remarks>
         public static byte[] WriteQName(string name, Dictionary<string, ushort> offsetMap)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -120,10 +147,8 @@ namespace Ward.Dns
                 pos += label.Length;
             }
 
-            if (offset != 0) {
-                var offsetBytes = BitConverter.GetBytes(SwapUInt16(offset));
-                Buffer.BlockCopy(offsetBytes, 0, qname, pos, offsetBytes.Length);
-            }
+            if (offset != 0)
+                WriteUInt16BigEndian(new Span<byte>(qname).Slice(pos), offset);
 
             return qname;
         }
@@ -144,24 +169,5 @@ namespace Ward.Dns
             }
             return final;
         }
-
-        /// <summary>
-        /// Swaps the endianness of a <see cref="System.UInt16"/>.
-        /// </summary>
-        /// <param name="x">The unsigned 16-bit integer whose endianness to swap.</param>
-        /// <returns>The unsigned 16-bit integer <paramref name="x"/> with its endianness swapped.</returns>
-        public static ushort SwapUInt16(ushort x) =>
-            BitConverter.IsLittleEndian ? (ushort)((ushort)((x & 0xff) << 8) | ((x >> 8) & 0xff)) : x;
-
-        /// <summary>
-        /// Swaps the endianness of a <see cref="System.UInt32"/>.
-        /// </summary>
-        /// <param name="x">The unsigned 32-bit integer whose endianness to swap.</param>
-        /// <returns>The unsigned 32-bit integer <paramref name="x"/> with its endianness swapped.</returns>
-        public static uint SwapUInt32(uint x) =>
-            BitConverter.IsLittleEndian ? ((x & 0x000000ff) << 24) +
-                                          ((x & 0x0000ff00) << 8) +
-                                          ((x & 0x00ff0000) >> 8) +
-                                          ((x & 0xff000000) >> 24) : x;
     }
 }
