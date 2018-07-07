@@ -61,17 +61,10 @@ namespace Ward.Dns.Tests
             Assert.Equal(expectedAuthorities?.Count ?? 0, message.Header.TotalAuthorityRecords);
             Assert.Equal(expectedAdditional?.Count ?? 0, message.Header.TotalAdditionalRecords);
 
-            if (expectedQuestions != null)
-                expectedQuestions.Items.ForEach((eq, idx) => Assert.Question(eq, message.Questions[idx]));
-
-            if (expectedAnswers != null)
-                expectedAnswers.Items.ForEach((er, idx) => Assert.Record(er, message.Answers[idx]));
-
-            if (expectedAuthorities != null)
-                expectedAuthorities.Items.ForEach((ea, idx) => Assert.Record(ea, message.Authority[idx]));
-
-            if (expectedAdditional != null)
-                expectedAdditional.Items.ForEach((ea, idx) => Assert.Record(ea, message.Additional[idx]));
+            expectedQuestions.Items.ForEach((eq, idx) => Assert.Question(eq, message.Questions[idx]));
+            expectedAnswers?.Items.ForEach((er, idx) => Assert.Record(er, message.Answers[idx]));
+            expectedAuthorities?.Items.ForEach((ea, idx) => Assert.Record(ea, message.Authority[idx]));
+            expectedAdditional?.Items.ForEach((ea, idx) => Assert.Record(ea, message.Additional[idx]));
         }
     }
 }
